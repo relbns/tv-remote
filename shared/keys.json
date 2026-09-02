@@ -1,0 +1,72 @@
+{
+  "$comment": "Unified command vocabulary mapped to each protocol. Both clients build their key tables from this file, so a mapping can never drift between platforms.",
+  "version": 1,
+
+  "routing": {
+    "$comment": "In a set, these go to the screen; everything else goes to the source box first. Either list falls back to the other device when its own cannot serve the command.",
+    "preferDisplay": ["volup", "voldown", "mute", "setvolume", "tvpower", "input"]
+  },
+
+  "androidtv": {
+    "$comment": "Android KeyEvent constant names, resolved to integers by each client.",
+    "power": "KEYCODE_POWER",
+    "home": "KEYCODE_HOME",
+    "back": "KEYCODE_BACK",
+    "menu": "KEYCODE_MENU",
+    "up": "KEYCODE_DPAD_UP",
+    "down": "KEYCODE_DPAD_DOWN",
+    "left": "KEYCODE_DPAD_LEFT",
+    "right": "KEYCODE_DPAD_RIGHT",
+    "ok": "KEYCODE_DPAD_CENTER",
+    "volup": "KEYCODE_VOLUME_UP",
+    "voldown": "KEYCODE_VOLUME_DOWN",
+    "mute": "KEYCODE_VOLUME_MUTE",
+    "playpause": "KEYCODE_MEDIA_PLAY_PAUSE",
+    "stop": "KEYCODE_MEDIA_STOP",
+    "next": "KEYCODE_MEDIA_NEXT",
+    "prev": "KEYCODE_MEDIA_PREVIOUS",
+    "rewind": "KEYCODE_MEDIA_REWIND",
+    "forward": "KEYCODE_MEDIA_FAST_FORWARD",
+    "chup": "KEYCODE_CHANNEL_UP",
+    "chdown": "KEYCODE_CHANNEL_DOWN",
+    "guide": "KEYCODE_GUIDE",
+    "settings": "KEYCODE_SETTINGS",
+    "search": "KEYCODE_SEARCH",
+    "info": "KEYCODE_INFO",
+    "captions": "KEYCODE_CAPTIONS",
+    "backspace": "KEYCODE_DEL",
+    "tvpower": "KEYCODE_TV_POWER",
+    "input": "KEYCODE_TV_INPUT"
+  },
+
+  "webos": {
+    "$comment": "buttons ride the pointer-input socket; requests are SSAP endpoints.",
+    "buttons": {
+      "up": "UP", "down": "DOWN", "left": "LEFT", "right": "RIGHT", "ok": "ENTER",
+      "back": "BACK", "home": "HOME", "menu": "MENU", "exit": "EXIT", "info": "INFO",
+      "guide": "GUIDE", "chup": "CHANNELUP", "chdown": "CHANNELDOWN",
+      "volup": "VOLUMEUP", "voldown": "VOLUMEDOWN", "mute": "MUTE",
+      "playpause": "PLAY", "captions": "CC", "backspace": "DELETE"
+    },
+    "requests": {
+      "power": "ssap://system/turnOff",
+      "play": "ssap://media.controls/play",
+      "pause": "ssap://media.controls/pause",
+      "stop": "ssap://media.controls/stop",
+      "rewind": "ssap://media.controls/rewind",
+      "forward": "ssap://media.controls/fastForward"
+    }
+  },
+
+  "tizen": {
+    "power": "KEY_POWER", "tvpower": "KEY_POWER", "home": "KEY_HOME", "back": "KEY_RETURN",
+    "menu": "KEY_MENU", "exit": "KEY_EXIT", "up": "KEY_UP", "down": "KEY_DOWN",
+    "left": "KEY_LEFT", "right": "KEY_RIGHT", "ok": "KEY_ENTER",
+    "volup": "KEY_VOLUP", "voldown": "KEY_VOLDOWN", "mute": "KEY_MUTE",
+    "chup": "KEY_CHUP", "chdown": "KEY_CHDOWN",
+    "playpause": "KEY_PLAY_BACK", "play": "KEY_PLAY", "pause": "KEY_PAUSE",
+    "stop": "KEY_STOP", "rewind": "KEY_REWIND", "forward": "KEY_FF",
+    "guide": "KEY_GUIDE", "input": "KEY_SOURCE", "info": "KEY_INFO",
+    "settings": "KEY_TOOLS", "captions": "KEY_CAPTION", "chlist": "KEY_CH_LIST"
+  }
+}

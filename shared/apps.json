@@ -1,0 +1,25 @@
+{
+  "$comment": "Canonical app shortcut catalogue, compiled into every client at build time. Edit here only.",
+  "version": 1,
+  "catalog": [
+    { "label": "Netflix",     "package": "com.netflix.ninja",                    "androidLink": "https://www.netflix.com/title", "webosId": "netflix",                     "tizenId": "3201907018807" },
+    { "label": "YouTube",     "package": "com.google.android.youtube.tv",        "androidLink": "https://www.youtube.com",       "webosId": "youtube.leanback.v4",         "tizenId": "111299001912" },
+    { "label": "Disney+",     "package": "com.disney.disneyplus",                "androidLink": "https://www.disneyplus.com",    "webosId": "com.disney.disneyplus-prod",  "tizenId": "3201901017640" },
+    { "label": "Prime Video", "package": "com.amazon.amazonvideo.livingroom",    "androidLink": "https://app.primevideo.com",    "webosId": "amazon",                      "tizenId": "3201910019365" },
+    { "label": "Apple TV",    "package": "com.apple.atve.androidtv.appletv",     "androidLink": "https://tv.apple.com",          "webosId": "com.apple.appletv",           "tizenId": "3201807016597" },
+    { "label": "Spotify",     "package": "com.spotify.tv.android",               "androidLink": "https://open.spotify.com",      "webosId": "spotify-beehive",             "tizenId": "3201606009684" },
+    { "label": "HBO Max",     "package": "com.wbd.stream",                       "androidLink": "https://play.max.com",          "webosId": "com.wbd.stream",              "tizenId": "3201601007230" }
+  ],
+  "friendlyNames": {
+    "com.google.android.youtube.tvunplugged": "YouTube TV",
+    "com.google.android.tvlauncher": "מסך הבית",
+    "com.google.android.apps.tv.launcherx": "מסך הבית",
+    "com.android.tv.settings": "הגדרות"
+  },
+  "ignoredPackages": [
+    "com.google.android.tvlauncher",
+    "com.google.android.apps.tv.launcherx",
+    "com.android.tv.settings",
+    "com.google.android.tvrecommendations"
+  ]
+}

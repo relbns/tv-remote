@@ -1,0 +1,27 @@
+name: desktop · בדיקות
+
+on:
+  push:
+    branches: [main]
+    paths: ["desktop/**", "shared/**", ".github/workflows/desktop-ci.yml"]
+  pull_request:
+    paths: ["desktop/**", "shared/**", ".github/workflows/desktop-ci.yml"]
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+        working-directory: desktop
+      # Copies ../shared in, then asserts every routed command exists in the
+      # key tables and that each main-process module imports cleanly.
+      - run: npm run check
+        working-directory: desktop
+      - run: npm audit --audit-level=high
+        working-directory: desktop

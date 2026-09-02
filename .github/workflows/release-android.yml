@@ -1,0 +1,65 @@
+name: android · שחרור
+
+on:
+  push:
+    tags: ["android-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: tool/sync_shared.sh
+        working-directory: mobile
+      - run: flutter pub get
+        working-directory: mobile
+
+      # The keystore lives only in repository secrets; it is written to disk for
+      # the build and the runner is discarded afterwards.
+      - name: שחזור מפתח החתימה
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::חסר הסוד ANDROID_KEYSTORE_BASE64 — ראה docs/RELEASING.md"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > mobile/android/upload.jks
+          cat > mobile/android/key.properties <<EOF
+          storeFile=upload.jks
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          EOF
+
+      - run: flutter build apk --release
+        working-directory: mobile
+
+      - name: שם קובץ לפי הגרסה
+        id: name
+        run: |
+          version="${GITHUB_REF_NAME#android-v}"
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk "tv-remote-$version.apk"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: "אנדרואיד ${{ steps.name.outputs.version }}"
+          files: tv-remote-*.apk
+          generate_release_notes: true
+          body: |
+            ## התקנה
+
+            הורד את קובץ ה-APK לטלפון ופתח אותו. באנדרואיד יופיע אישור חד־פעמי
+            להתקנה ממקור לא מוכר — זה תקין לאפליקציה שלא מגיעה מחנות.

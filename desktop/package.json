@@ -1,0 +1,56 @@
+{
+  "name": "tv-remote",
+  "version": "0.1.0",
+  "private": true,
+  "description": "שלט למחשב לממירי Android TV ולטלוויזיות LG webOS / Samsung Tizen",
+  "main": "src/main/index.js",
+  "type": "module",
+  "scripts": {
+    "shared": "node scripts/sync-shared.js",
+    "prestart": "node scripts/sync-shared.js",
+    "start": "env -u ELECTRON_RUN_AS_NODE electron .",
+    "predist": "node scripts/sync-shared.js",
+    "dist": "electron-builder --mac",
+    "icons": "python3 scripts/make-icons.py",
+    "smoke": "node scripts/smoke.js",
+    "discover": "node scripts/test-discovery.js",
+    "check": "node scripts/sync-shared.js && node scripts/check.js"
+  },
+  "dependencies": {
+    "@kud/androidtv-remote": "^0.1.2",
+    "bonjour-service": "^1.4.4",
+    "lgtv2": "^2.0.0",
+    "ws": "^8.21.3"
+  },
+  "overrides": {
+    "protobufjs": "^8.8.0"
+  },
+  "devDependencies": {
+    "electron": "^44.1.1",
+    "electron-builder": "^26.15.3"
+  },
+  "productName": "TV Remote",
+  "build": {
+    "appId": "co.singalong.tvremote",
+    "productName": "TV Remote",
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    }
+  }
+}

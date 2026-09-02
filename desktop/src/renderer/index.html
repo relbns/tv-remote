@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https:;"
+    />
+    <title>שלט טלוויזיה</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="bar">
+        <button class="icon-btn" id="settings-btn" title="הגדרות" aria-label="הגדרות">⚙</button>
+        <div class="picker">
+          <select id="target-select" aria-label="בחירת מסך או סט"></select>
+          <span class="dots" id="status-dots"></span>
+        </div>
+        <button class="icon-btn danger-text" id="power-btn" title="הדלקה / כיבוי של הסט" aria-label="הפעלה">⏻</button>
+      </header>
+
+      <div id="toast" class="toast" hidden></div>
+
+      <!-- ============ pairing ============ -->
+      <section id="pair-view" class="view" hidden>
+        <div class="card">
+          <h2 id="pair-title">צימוד מכשיר</h2>
+          <p id="pair-help" class="muted small"></p>
+          <div id="pair-pin-row" class="pin-row">
+            <input id="pin-input" type="text" inputmode="latin" maxlength="6" placeholder="ABC123"
+                   autocomplete="off" spellcheck="false" aria-label="קוד צימוד" />
+            <button class="primary" id="pin-submit">אישור</button>
+          </div>
+          <button class="link-btn" data-help="pairing">למה צריך לצמד? →</button>
+        </div>
+      </section>
+
+      <!-- ============ remote ============ -->
+      <section id="remote-view" class="view">
+        <div class="row quick">
+          <button class="pill" data-cmd="home">בית</button>
+          <button class="pill" data-cmd="back">חזור</button>
+          <button class="pill" data-cmd="menu">תפריט</button>
+          <button class="pill" data-cmd="guide">מדריך</button>
+        </div>
+
+        <div class="dpad" role="group" aria-label="ניווט">
+          <button class="dpad-btn up" data-cmd="up" aria-label="למעלה"></button>
+          <button class="dpad-btn down" data-cmd="down" aria-label="למטה"></button>
+          <button class="dpad-btn left" data-cmd="left" aria-label="שמאלה"></button>
+          <button class="dpad-btn right" data-cmd="right" aria-label="ימינה"></button>
+          <button class="dpad-ok" data-cmd="ok">OK</button>
+        </div>
+
+        <div class="row media">
+          <button class="round" data-cmd="prev" title="הקודם">⏮</button>
+          <button class="round" data-cmd="rewind" title="אחורה">⏪</button>
+          <button class="round wide" data-cmd="playpause" title="נגן / השהה">⏯</button>
+          <button class="round" data-cmd="forward" title="קדימה">⏩</button>
+          <button class="round" data-cmd="next" title="הבא">⏭</button>
+        </div>
+
+        <div class="row sliders">
+          <div class="stepper" role="group" aria-label="עוצמת שמע">
+            <button data-cmd="voldown" aria-label="הנמכת עוצמה">−</button>
+            <span class="stepper-label">עוצמה</span>
+            <button data-cmd="volup" aria-label="הגברת עוצמה">+</button>
+          </div>
+          <button class="round" data-cmd="mute" id="mute-btn" title="השתקה">🔇</button>
+          <div class="stepper" role="group" aria-label="ערוץ">
+            <button data-cmd="chdown" aria-label="ערוץ קודם">−</button>
+            <span class="stepper-label">ערוץ</span>
+            <button data-cmd="chup" aria-label="ערוץ הבא">+</button>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <span>אפליקציות</span>
+          <button class="link-btn" id="manage-apps">ניהול</button>
+        </div>
+        <div class="row apps" id="apps-row"></div>
+        <p class="hint" id="apps-empty" hidden>אין קיצורים עדיין — פתח <b>ניהול</b>.</p>
+
+        <div class="row typing">
+          <input id="text-input" type="text" placeholder="הקלד לחיפוש בטלוויזיה…" aria-label="שליחת טקסט" />
+          <button class="primary" id="text-send">שלח</button>
+        </div>
+
+        <div class="row tv-extras">
+          <button class="pill ghost" data-cmd="tvpower">כיבוי מסך</button>
+          <button class="pill ghost" data-cmd="input">מקור</button>
+          <button class="pill ghost" data-cmd="settings">הגדרות</button>
+        </div>
+
+        <p class="hint" id="hint"></p>
+        <p class="hint routing" id="routing-note" hidden></p>
+      </section>
+
+      <!-- ============ apps management ============ -->
+      <section id="apps-view" class="view" hidden>
+        <div class="sub-head">
+          <button class="icon-btn" data-back aria-label="חזרה">›</button>
+          <h2>ניהול אפליקציות</h2>
+        </div>
+
+        <div class="card note">
+          <p class="small">
+            בממיר אין דרך לשאול אילו אפליקציות מותקנות — הפרוטוקול לא תומך בזה.
+            לכן פתח אפליקציה בממיר עם השלט הרגיל, והיא תופיע כאן כהצעה לשמירה.
+          </p>
+          <button class="link-btn" data-help="apps">הסבר מלא →</button>
+        </div>
+
+        <div id="suggest-block" hidden>
+          <div class="section-head"><span>זוהו בממיר</span></div>
+          <div class="device-list" id="suggest-list"></div>
+        </div>
+
+        <div class="section-head"><span>קיצורים שמורים</span></div>
+        <div class="device-list" id="saved-apps"></div>
+
+        <div class="section-head"><span>הוספה ידנית</span></div>
+        <div class="row">
+          <input type="text" id="app-label" placeholder="שם" aria-label="שם האפליקציה" />
+        </div>
+        <div class="row">
+          <input type="text" id="app-link" placeholder="קישור או שם חבילה" aria-label="יעד ההפעלה" />
+          <button class="primary" id="app-add">הוסף</button>
+        </div>
+      </section>
+
+      <!-- ============ settings ============ -->
+      <section id="settings-view" class="view" hidden>
+        <div class="sub-head">
+          <button class="icon-btn" data-back aria-label="חזרה">›</button>
+          <h2>הגדרות</h2>
+          <button class="icon-btn" id="help-btn" title="עזרה" aria-label="עזרה">?</button>
+        </div>
+
+        <div class="section-head"><span>סטים — מסך אחד ששולט בהכל</span></div>
+        <div class="device-list" id="room-list"></div>
+        <div class="card" id="room-builder">
+          <p class="small muted">חבר מסך וממיר לסט אחד. הניווט ילך לממיר, העוצמה למסך, וכפתור ההפעלה ידליק ויכבה את שניהם.</p>
+          <div class="row">
+            <input type="text" id="room-name" placeholder="שם הסט (למשל: סלון)" aria-label="שם הסט" />
+          </div>
+          <div class="row">
+            <select id="room-display" aria-label="מסך"></select>
+            <select id="room-source" aria-label="ממיר"></select>
+          </div>
+          <button class="primary block" id="room-save">צור סט</button>
+          <button class="link-btn" data-help="sets">איך הניתוב עובד? →</button>
+        </div>
+
+        <div class="section-head"><span>מכשירים</span></div>
+        <div class="device-list" id="device-list"></div>
+        <div class="row scan-row">
+          <button class="primary" id="scan-btn">חפש מכשירים</button>
+          <label class="check"><input type="checkbox" id="deep-scan" /> סריקה עמוקה</label>
+        </div>
+        <div class="device-list" id="found-list"></div>
+        <p class="hint">סריקה עמוקה בודקת כל כתובת ברשת — שימושי לטלוויזיה שהייתה כבויה.</p>
+      </section>
+
+      <!-- ============ help ============ -->
+      <section id="help-view" class="view" hidden>
+        <div class="sub-head">
+          <button class="icon-btn" data-back aria-label="חזרה">›</button>
+          <h2>עזרה</h2>
+        </div>
+
+        <details class="help" id="help-pairing">
+          <summary>צימוד — למה, ואיך</summary>
+          <p>כל מכשיר דורש אישור חד־פעמי לפני שיקבל פקודות. אחריו נשמרת תעודה במחשב
+          ולא תצטרך לצמד שוב.</p>
+          <ul>
+            <li><b>ממיר Android TV</b> — על המסך יופיע קוד בן 6 תווים. הקלד אותו כאן.</li>
+            <li><b>טלוויזיית LG</b> — תופיע בקשת אישור על המסך; אשר אותה עם השלט המקורי.</li>
+            <li><b>טלוויזיית Samsung</b> — תופיע בקשת אישור; בחר "אפשר".</li>
+          </ul>
+          <p class="muted">הקוד לא מתקבל? ודא שהמחשב והמכשיר על אותה רשת, ונסה שוב —
+          הקוד מתחלף בכל ניסיון.</p>
+        </details>
+
+        <details class="help" id="help-sets">
+          <summary>סטים — מסך אחד לכל הבית</summary>
+          <p>סט מחבר מסך וממיר לשלט אחד. כל פקודה נשלחת למכשיר הנכון:</p>
+          <table class="routing-table">
+            <tr><td>ניווט, OK, חזרה, מדיה, טקסט</td><td>הממיר</td></tr>
+            <tr><td>עוצמת שמע, השתקה</td><td>המסך</td></tr>
+            <tr><td>כיבוי מסך, בחירת מקור</td><td>המסך</td></tr>
+            <tr><td>הפעלה / כיבוי</td><td>שניהם יחד</td></tr>
+          </table>
+          <p>אם המכשיר המועדף לא זמין או לא תומך בפקודה, היא נשלחת אוטומטית לשני.
+          כך עוצמת השמע ממשיכה לעבוד גם בטלוויזיה בלי חיבור רשת — הממיר מעביר
+          אותה בכבל ה-HDMI.</p>
+        </details>
+
+        <details class="help" id="help-apps">
+          <summary>אפליקציות — למה הרשימה שונה בין מכשירים</summary>
+          <p><b>בטלוויזיות</b> LG וסמסונג הרשימה אמיתית וחיה — הן מדווחות מה מותקן.</p>
+          <p><b>בממיר</b> זה בלתי אפשרי: הפרוטוקול של Android TV מכיל הודעה אחת בלבד
+          לאפליקציות — "הפעל את הקישור הזה" — ואין בו בקשה לרשימת אפליקציות.</p>
+          <p>לכן הממיר לומד: בכל פעם שאתה מחליף אפליקציה עם השלט הרגיל, הוא מדווח
+          מה פועל כרגע, וזה מופיע כאן כהצעה לשמירה בלחיצה אחת.</p>
+        </details>
+
+        <details class="help" id="help-cec">
+          <summary>טלוויזיה בלי חיבור רשת (HDMI-CEC)</summary>
+          <p>טלוויזיה ישנה יותר עדיין נשלטת — דרך הממיר המחובר אליה בכבל HDMI.
+          הכפתורים <b>כיבוי מסך</b>, <b>מקור</b> ועוצמת השמע נשלחים כמקשים לממיר,
+          והוא מעביר אותם לטלוויזיה בתקן CEC.</p>
+          <p>זה דורש ש-CEC יהיה מופעל בטלוויזיה. כל יצרן קורא לזה אחרת:</p>
+          <ul>
+            <li><b>LG</b> — SIMPLINK</li>
+            <li><b>Samsung</b> — Anynet+</li>
+            <li><b>Sony</b> — Bravia Sync</li>
+            <li><b>Philips</b> — EasyLink</li>
+          </ul>
+        </details>
+
+        <details class="help" id="help-wol">
+          <summary>למה הכיבוי עובד וההדלקה צריכה הגדרה</summary>
+          <p>כיבוי נשלח בערוץ הרגיל. הדלקה לא יכולה — כשהמכשיר כבוי, שקע הבקרה
+          שלו מת יחד איתו ואין למי לדבר.</p>
+          <p>לכן ההדלקה נשלחת כחבילת Wake-on-LAN, וזה דורש שהמכשיר יישאר מחובר
+          לרשת גם בכיבוי:</p>
+          <ul>
+            <li><b>LG</b> — הגדרות ← כללי ← מכשירים ← הגדרות טלוויזיה נוספות ← הפעלה דרך Wi-Fi</li>
+            <li><b>Samsung</b> — הגדרות ← כללי ← מנהל רשת ← הפעלה עם מכשיר נייד</li>
+          </ul>
+        </details>
+
+        <details class="help" id="help-keys">
+          <summary>קיצורי מקלדת</summary>
+          <table class="routing-table">
+            <tr><td>חיצים</td><td>ניווט</td></tr>
+            <tr><td>Enter</td><td>אישור</td></tr>
+            <tr><td>Backspace</td><td>חזרה</td></tr>
+            <tr><td>רווח</td><td>נגן / השהה</td></tr>
+            <tr><td>H</td><td>מסך הבית</td></tr>
+            <tr><td>M</td><td>השתקה</td></tr>
+            <tr><td>+ / −</td><td>עוצמת שמע</td></tr>
+            <tr><td>PageUp / PageDown</td><td>ערוץ</td></tr>
+            <tr><td>Esc</td><td>סגירת החלון</td></tr>
+            <tr><td>⌘⇧T</td><td>פתיחת השלט מכל מקום</td></tr>
+          </table>
+        </details>
+
+        <details class="help" id="help-trouble">
+          <summary>משהו לא עובד</summary>
+          <ul>
+            <li><b>הנקודה אדומה</b> — המכשיר כבוי או מחוץ לרשת. האפליקציה מנסה
+            להתחבר מחדש כל 15 שניות.</li>
+            <li><b>כפתור נעלם</b> — המכשיר הנוכחי לא תומך בפקודה הזו.</li>
+            <li><b>הטלוויזיה לא נמצאת בחיפוש</b> — טלוויזיה כבויה לא משדרת את עצמה.
+            הדלק אותה, וסמן "סריקה עמוקה".</li>
+            <li><b>הצימוד אבד</b> — קורה אחרי איפוס המכשיר. הסר אותו והוסף מחדש.</li>
+          </ul>
+        </details>
+      </section>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
