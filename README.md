@@ -54,6 +54,14 @@ cd mobile && flutter pub get && flutter run
 | `android-v1.2.0` | APK חתום, מצורף ל-Release |
 | `desktop-v1.2.0` | DMG ל-Apple Silicon |
 
+## מדריכים
+
+| | |
+| --- | --- |
+| [docs/RELEASING.md](docs/RELEASING.md) | מפתח חתימה, בנייה, ושחרור אוטומטי בתגית |
+| [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) | הפצה בלי חנות, וחשבון ההפצה המוגבלת החינמי |
+| [docs/ICONS.md](docs/ICONS.md) | מה לייצר, פרומפטים ל-AI, והאילוץ של Adaptive Icon |
+
 ## רישיון
 
 MIT

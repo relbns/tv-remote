@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.15.0
   flutter_test:
     sdk: flutter
 
@@ -91,3 +92,18 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Generates every Android density and the adaptive-icon layers from two source
+# images. Run `dart run flutter_launcher_icons` after replacing them.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  # Legacy square/round icon: the full artwork, edge to edge.
+  image_path: "assets/icon/icon.png"
+  # Adaptive icon: Android masks these to whatever shape the launcher uses, and
+  # crops ~33% off every edge — the subject must sit inside the middle two thirds.
+  adaptive_icon_background: "#0B1020"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Monochrome layer drives Android 13+ themed icons.
+  adaptive_icon_monochrome: "assets/icon/icon_foreground.png"
+  remove_alpha_ios: true
