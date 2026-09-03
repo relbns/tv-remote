@@ -1,0 +1,69 @@
+import 'dart:math';
+
+import 'package:basic_utils/basic_utils.dart';
+
+/// A client certificate and its private key, both PEM encoded.
+///
+/// Android TV Remote v2 is mutual TLS: the box authenticates the *client*, so a
+/// certificate has to exist before pairing can even start. It is generated on
+/// the device, kept for the life of the pairing, and replayed on every later
+/// connection — losing it means pairing again.
+class ClientCertificate {
+  const ClientCertificate({
+    required this.privateKeyPem,
+    required this.certificatePem,
+  });
+
+  final String privateKeyPem;
+  final String certificatePem;
+
+  Map<String, String> toJson() => {
+    'key': privateKeyPem,
+    'cert': certificatePem,
+  };
+
+  factory ClientCertificate.fromJson(Map<String, dynamic> json) =>
+      ClientCertificate(
+        privateKeyPem: json['key'] as String,
+        certificatePem: json['cert'] as String,
+      );
+}
+
+/// Build a fresh self-signed certificate for this installation.
+///
+/// The box never validates the subject — it only pins whatever certificate it
+/// saw during pairing — so the fields exist to be well-formed, not to be
+/// meaningful. [commonName] is what appears in the box's list of paired
+/// devices, which is the one field a person will actually read.
+ClientCertificate generateClientCertificate({
+  String commonName = 'TV Remote',
+  String organisation = 'tv-remote',
+  String country = 'IL',
+  int validityDays = 10000,
+}) {
+  final pair = CryptoUtils.generateRSAKeyPair(keySize: 2048);
+  final privateKey = pair.privateKey as RSAPrivateKey;
+  final publicKey = pair.publicKey as RSAPublicKey;
+
+  // A random serial keeps two installations from colliding on a box that keys
+  // its paired-device list by serial.
+  final serial = BigInt.from(Random.secure().nextInt(1 << 32)).abs();
+
+  final csr = X509Utils.generateRsaCsrPem(
+    {'CN': commonName, 'O': organisation, 'C': country},
+    privateKey,
+    publicKey,
+  );
+
+  final certificate = X509Utils.generateSelfSignedCertificate(
+    privateKey,
+    csr,
+    validityDays,
+    serialNumber: serial.toString(),
+  );
+
+  return ClientCertificate(
+    privateKeyPem: CryptoUtils.encodeRSAPrivateKeyToPem(privateKey),
+    certificatePem: certificate,
+  );
+}

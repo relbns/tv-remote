@@ -5,6 +5,14 @@
 **שלט לממירי Android TV ולטלוויזיות חכמות — למחשב ולנייד.**
 הכל רץ ברשת הביתית. בלי ענן, בלי חשבון, בלי שרת באמצע.
 
+[![desktop](https://github.com/relbns/tv-remote/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/relbns/tv-remote/actions/workflows/desktop-ci.yml)
+[![android](https://github.com/relbns/tv-remote/actions/workflows/android-ci.yml/badge.svg)](https://github.com/relbns/tv-remote/actions/workflows/android-ci.yml)
+[![release](https://img.shields.io/github/v/release/relbns/tv-remote?label=%D7%92%D7%A8%D7%A1%D7%94&color=E9A93F)](https://github.com/relbns/tv-remote/releases)
+
+![platform](https://img.shields.io/badge/macOS-Electron-0B1020?logo=apple&logoColor=white)
+![platform](https://img.shields.io/badge/Android-Flutter-0B1020?logo=flutter&logoColor=white)
+![license](https://img.shields.io/badge/license-MIT-E9A93F)
+
 <img src="docs/desktop.png" width="300" alt="אפליקציית שורת התפריטים ב-macOS">
 
 </div>
