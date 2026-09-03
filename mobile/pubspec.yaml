@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # --- protocol layer ---
+  crypto: ^3.0.6                 # SHA-256 for the pairing digest
   protobuf: ^6.0.0              # runtime for the generated Android TV messages
   basic_utils: ^5.8.2           # pure-Dart X.509: the pairing certificate is made at run time
   pointycastle: ^4.0.0          # crypto primitives behind basic_utils
