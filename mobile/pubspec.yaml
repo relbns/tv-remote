@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.15.0
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -104,6 +104,8 @@ flutter_launcher_icons:
   # crops ~33% off every edge — the subject must sit inside the middle two thirds.
   adaptive_icon_background: "#0B1020"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # The tool pads the foreground by this much before Android crops it.
+  adaptive_icon_foreground_inset: 16
   # Monochrome layer drives Android 13+ themed icons.
   adaptive_icon_monochrome: "assets/icon/icon_foreground.png"
   remove_alpha_ios: true
