@@ -81,7 +81,12 @@ class Rocker extends StatelessWidget {
                 child: Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11, color: Palette.inkDim),
+                  maxLines: 1,
+                  // The two step buttons take most of the width; without this
+                  // the label wraps to a second line and the rocker grows.
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
+                  style: const TextStyle(fontSize: 10.5, color: Palette.inkDim),
                 ),
               ),
               _Step('+', enabled ? onUp : null, 'הגבר $label'),
@@ -112,7 +117,7 @@ class _Step extends StatelessWidget {
               onTap!();
             },
       child: SizedBox(
-        width: 52,
+        width: 42,
         height: 56,
         child: Center(
           child: Text(

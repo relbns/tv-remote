@@ -148,21 +148,31 @@ class DeviceStore {
 /// A saved app shortcut. Mirrors the shared catalogue's shape so a learned
 /// package and a catalogue entry are stored the same way.
 class AppEntry {
-  const AppEntry({required this.label, required this.launch, this.package});
+  const AppEntry({
+    required this.label,
+    required this.launch,
+    this.package,
+    this.color,
+  });
 
   final String label;
   final String launch;
   final String? package;
 
+  /// Brand colour as `#RRGGBB`; null for a learned app we have no colour for.
+  final String? color;
+
   Map<String, dynamic> toJson() => {
     'label': label,
     'launch': launch,
     if (package != null) 'package': package,
+    if (color != null) 'color': color,
   };
 
   factory AppEntry.fromJson(Map<String, dynamic> json) => AppEntry(
     label: json['label'] as String,
     launch: json['launch'] as String,
     package: json['package'] as String?,
+    color: json['color'] as String?,
   );
 }

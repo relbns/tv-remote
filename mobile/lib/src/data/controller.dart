@@ -286,7 +286,12 @@ class RemoteController extends ChangeNotifier {
     if (saved != null) return saved;
     return [
       for (final app in _shared.catalog)
-        AppEntry(label: app.label, launch: app.launch, package: app.package),
+        AppEntry(
+          label: app.label,
+          launch: app.launch,
+          package: app.package,
+          color: app.color,
+        ),
     ];
   }
 

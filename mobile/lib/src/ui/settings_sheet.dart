@@ -53,10 +53,14 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             const SizedBox(height: 4),
             const Text(
               'מסך פתיחה',
+              textAlign: TextAlign.start,
               style: TextStyle(fontSize: 12, color: Palette.inkDim),
             ),
             const Text(
-              'הלשונית שהאפליקציה נפתחת בה.',
+              // No trailing period: at the end of a right-to-left line it lands
+              // on the far left and reads as if it opened the sentence.
+              'הלשונית שהאפליקציה נפתחת בה',
+              textAlign: TextAlign.start,
               style: TextStyle(
                 fontSize: 12,
                 color: Palette.inkDim,

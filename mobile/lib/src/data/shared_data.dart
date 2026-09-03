@@ -47,6 +47,7 @@ class SharedData {
         label: entry['label'] as String,
         launch: entry['androidLink'] as String,
         package: entry['package'] as String?,
+        color: entry['color'] as String?,
       ),
   ];
 
@@ -70,9 +71,17 @@ class SharedData {
 }
 
 class AppShortcut {
-  const AppShortcut({required this.label, required this.launch, this.package});
+  const AppShortcut({
+    required this.label,
+    required this.launch,
+    this.package,
+    this.color,
+  });
 
   final String label;
+
+  /// Brand colour for the shortcut tile, as `#RRGGBB`.
+  final String? color;
 
   /// A deep link, or `intent:#Intent;package=…;end` for a learned package.
   final String launch;
@@ -82,12 +91,14 @@ class AppShortcut {
     'label': label,
     'launch': launch,
     if (package != null) 'package': package,
+    if (color != null) 'color': color,
   };
 
   factory AppShortcut.fromJson(Map<String, dynamic> json) => AppShortcut(
     label: json['label'] as String,
     launch: json['launch'] as String,
     package: json['package'] as String?,
+    color: json['color'] as String?,
   );
 
   /// What to send for a package we have no catalogue entry for. The box

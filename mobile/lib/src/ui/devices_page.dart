@@ -49,6 +49,7 @@ class _DevicesPageState extends State<DevicesPage> {
         _DeviceRow(
           device: device,
           paired: c.isPaired(device),
+          connected: c.current?.id == device.id && c.isConnected,
           supported: device.kind == DeviceKind.androidtv,
           selected: c.current?.id == device.id,
           onSelect: () => c.select(device),
@@ -241,6 +242,7 @@ class _DeviceRow extends StatelessWidget {
   const _DeviceRow({
     required this.device,
     required this.paired,
+    required this.connected,
     required this.supported,
     required this.selected,
     required this.onSelect,
@@ -252,6 +254,9 @@ class _DeviceRow extends StatelessWidget {
   final Device device;
   final bool paired;
 
+  /// Whether a session to this device is open right now.
+  final bool connected;
+
   /// Whether this platform has a driver for the device's protocol.
   final bool supported;
   final bool selected;
@@ -261,67 +266,88 @@ class _DeviceRow extends StatelessWidget {
   final VoidCallback onRemove;
 
   @override
-  Widget build(BuildContext context) => Raised(
-    radius: Radii.md,
-    onTap: paired ? onSelect : null,
-    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-    child: Row(
-      spacing: 10,
-      children: [
-        Lamp(color: selected ? Palette.live : Palette.inkDim),
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                device.name,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                '${device.kind.label} · ${device.host}',
-                style: const TextStyle(fontSize: 11, color: Palette.inkDim),
-              ),
-            ],
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(Radii.md),
+      // Selection is a ring; the lamp is reserved for the connection itself,
+      // which is what a coloured dot is read as.
+      border: selected
+          ? Border.all(color: Palette.amber.withValues(alpha: 0.55), width: 1.5)
+          : null,
+    ),
+    child: Raised(
+      radius: Radii.md,
+      onTap: paired ? onSelect : null,
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      child: Row(
+        spacing: 10,
+        children: [
+          Lamp(
+            color: connected
+                ? Palette.live
+                : paired
+                ? Palette.dead
+                : Palette.inkDim,
+            tooltip: connected
+                ? 'מחובר'
+                : paired
+                ? 'מצומד, לא מחובר'
+                : 'לא מצומד',
           ),
-        ),
-        if (!paired)
-          TextButton(
-            onPressed: onPair,
-            style: TextButton.styleFrom(
-              minimumSize: const Size(0, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  device.name,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  '${device.kind.label} · ${device.host}',
+                  style: const TextStyle(fontSize: 11, color: Palette.inkDim),
+                ),
+              ],
             ),
-            child: Text(
-              // A device whose protocol has no driver here must not offer a
-              // button that can only fail.
-              supported ? 'צמד' : 'בקרוב',
-              style: TextStyle(
-                color: supported ? Palette.amber : Palette.inkDim,
+          ),
+          if (!paired)
+            TextButton(
+              onPressed: onPair,
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              child: Text(
+                // A device whose protocol has no driver here must not offer a
+                // button that can only fail.
+                supported ? 'צמד' : 'בקרוב',
+                style: TextStyle(
+                  color: supported ? Palette.amber : Palette.inkDim,
+                ),
               ),
             ),
+          IconButton(
+            onPressed: onRename,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(
+              Icons.edit_outlined,
+              size: 18,
+              color: Palette.inkDim,
+            ),
+            tooltip: 'שנה שם',
           ),
-        IconButton(
-          onPressed: onRename,
-          visualDensity: VisualDensity.compact,
-          icon: const Icon(
-            Icons.edit_outlined,
-            size: 18,
-            color: Palette.inkDim,
+          IconButton(
+            onPressed: onRemove,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              size: 19,
+              color: Palette.inkDim,
+            ),
+            tooltip: 'הסר',
           ),
-          tooltip: 'שנה שם',
-        ),
-        IconButton(
-          onPressed: onRemove,
-          visualDensity: VisualDensity.compact,
-          icon: const Icon(
-            Icons.delete_outline_rounded,
-            size: 19,
-            color: Palette.inkDim,
-          ),
-          tooltip: 'הסר',
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

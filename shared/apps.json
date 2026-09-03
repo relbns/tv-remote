@@ -1,14 +1,63 @@
 {
-  "$comment": "Canonical app shortcut catalogue, compiled into every client at build time. Edit here only.",
+  "$comment": "Canonical app shortcut catalogue, compiled into every client at build time. Edit here only. `color` is the brand colour used for the shortcut tile — logos themselves are trademarks and are not bundled.",
   "version": 1,
   "catalog": [
-    { "label": "Netflix",     "package": "com.netflix.ninja",                    "androidLink": "https://www.netflix.com/title", "webosId": "netflix",                     "tizenId": "3201907018807" },
-    { "label": "YouTube",     "package": "com.google.android.youtube.tv",        "androidLink": "https://www.youtube.com",       "webosId": "youtube.leanback.v4",         "tizenId": "111299001912" },
-    { "label": "Disney+",     "package": "com.disney.disneyplus",                "androidLink": "https://www.disneyplus.com",    "webosId": "com.disney.disneyplus-prod",  "tizenId": "3201901017640" },
-    { "label": "Prime Video", "package": "com.amazon.amazonvideo.livingroom",    "androidLink": "https://app.primevideo.com",    "webosId": "amazon",                      "tizenId": "3201910019365" },
-    { "label": "Apple TV",    "package": "com.apple.atve.androidtv.appletv",     "androidLink": "https://tv.apple.com",          "webosId": "com.apple.appletv",           "tizenId": "3201807016597" },
-    { "label": "Spotify",     "package": "com.spotify.tv.android",               "androidLink": "https://open.spotify.com",      "webosId": "spotify-beehive",             "tizenId": "3201606009684" },
-    { "label": "HBO Max",     "package": "com.wbd.stream",                       "androidLink": "https://play.max.com",          "webosId": "com.wbd.stream",              "tizenId": "3201601007230" }
+    {
+      "label": "Netflix",
+      "package": "com.netflix.ninja",
+      "androidLink": "https://www.netflix.com/title",
+      "webosId": "netflix",
+      "tizenId": "3201907018807",
+      "color": "#E50914"
+    },
+    {
+      "label": "YouTube",
+      "package": "com.google.android.youtube.tv",
+      "androidLink": "https://www.youtube.com",
+      "webosId": "youtube.leanback.v4",
+      "tizenId": "111299001912",
+      "color": "#FF0033"
+    },
+    {
+      "label": "Disney+",
+      "package": "com.disney.disneyplus",
+      "androidLink": "https://www.disneyplus.com",
+      "webosId": "com.disney.disneyplus-prod",
+      "tizenId": "3201901017640",
+      "color": "#1F6FEB"
+    },
+    {
+      "label": "Prime Video",
+      "package": "com.amazon.amazonvideo.livingroom",
+      "androidLink": "https://app.primevideo.com",
+      "webosId": "amazon",
+      "tizenId": "3201910019365",
+      "color": "#00A8E1"
+    },
+    {
+      "label": "Apple TV",
+      "package": "com.apple.atve.androidtv.appletv",
+      "androidLink": "https://tv.apple.com",
+      "webosId": "com.apple.appletv",
+      "tizenId": "3201807016597",
+      "color": "#B8BCC4"
+    },
+    {
+      "label": "Spotify",
+      "package": "com.spotify.tv.android",
+      "androidLink": "https://open.spotify.com",
+      "webosId": "spotify-beehive",
+      "tizenId": "3201606009684",
+      "color": "#1DB954"
+    },
+    {
+      "label": "HBO Max",
+      "package": "com.wbd.stream",
+      "androidLink": "https://play.max.com",
+      "webosId": "com.wbd.stream",
+      "tizenId": "3201601007230",
+      "color": "#7B2BF9"
+    }
   ],
   "friendlyNames": {
     "com.google.android.youtube.tvunplugged": "YouTube TV",
