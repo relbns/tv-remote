@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/controller.dart';
 import '../data/device.dart';
@@ -175,9 +176,10 @@ class _RemotePageState extends State<RemotePage> {
         if (device.kind == DeviceKind.androidtv) ...[
           const SizedBox(height: 14),
           const Text(
-            'הכפתורים "כיבוי מסך" ו"מקור" מועברים לטלוויזיה בכבל ה-HDMI '
-            'בתקן CEC — הם דורשים ש-CEC יהיה מופעל בה (LG: SIMPLINK, '
-            'Samsung: Anynet+).',
+            'הכפתורים "כיבוי מסך" ו"מקור" מועברים לטלוויזיה בכבל ה־'
+            '\u2068HDMI\u2069 בתקן \u2068CEC\u2069, וזה עובד רק אם הממיר '
+            'תומך בהעברה כזו. חלק מהממירים אינם תומכים, ואז אין דרך תוכנה '
+            'לשלוט בטלוויזיה.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11, color: Palette.inkDim, height: 1.6),
           ),
@@ -240,6 +242,8 @@ class _Header extends StatelessWidget {
               controller.labelFor(controller.deviceState.currentApp!),
               style: const TextStyle(fontSize: 11.5, color: Palette.amber),
             ),
+          // Powering the box itself had no control anywhere in the app.
+          _PowerButton(controller: controller),
         ],
       ),
     );
@@ -389,6 +393,47 @@ class _Empty extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
+  );
+}
+
+/// Toggles the box's own power.
+///
+/// A box that is asleep still answers the network, so this is a plain toggle
+/// rather than the wake-on-LAN dance a television needs.
+class _PowerButton extends StatelessWidget {
+  const _PowerButton({required this.controller});
+  final RemoteController controller;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'הפעלה וכיבוי',
+    child: InkResponse(
+      radius: 26,
+      onTap: controller.isConnected
+          ? () {
+              HapticFeedback.mediumImpact();
+              controller.send('power');
+            }
+          : null,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Palette.dead.withValues(
+            alpha: controller.isConnected ? 0.14 : 0.05,
+          ),
+        ),
+        child: Icon(
+          Icons.power_settings_new_rounded,
+          size: 20,
+          color: controller.isConnected
+              ? Palette.dead
+              : Palette.dead.withValues(alpha: 0.4),
+        ),
       ),
     ),
   );

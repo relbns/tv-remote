@@ -30,7 +30,6 @@ Future<void> main() async {
   final shared = await SharedData.load();
   final store = await DeviceStore.open();
   final controller = RemoteController(store, shared);
-  await controller.refreshPaired();
   await controller.load();
 
   runApp(TvRemoteApp(controller: controller));

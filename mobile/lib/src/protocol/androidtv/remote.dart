@@ -178,7 +178,15 @@ class AndroidTvRemote {
   void _send(RemoteMessage message) {
     final socket = _socket;
     if (socket == null) throw const RemoteException('אין חיבור פעיל');
-    socket.add(encodeDelimited(message.writeToBuffer()));
+    try {
+      socket.add(encodeDelimited(message.writeToBuffer()));
+    } on Object catch (error) {
+      // A write to a socket the box has just reset throws from outside any
+      // await, so without this it escapes as an unhandled exception and takes
+      // the zone with it. The session is over either way; report and close.
+      _errors.add(error);
+      _finishUnready(error);
+    }
   }
 
   void _onData(List<int> chunk) {

@@ -107,6 +107,7 @@ class RemoteController extends ChangeNotifier {
     );
 
     devices = _store.devices();
+    await refreshPaired();
     current ??= devices.isEmpty ? null : devices.first;
     notifyListeners();
     if (current != null) unawaited(connect());
@@ -238,6 +239,9 @@ class RemoteController extends ChangeNotifier {
     _session = session;
     _stateSub = session.states.listen(_onState);
     _closedSub = session.closed.listen((_) => _onSessionClosed());
+    // Protocol errors are surfaced, not swallowed: a silent failure here looks
+    // exactly like a button that does nothing.
+    session.errors.listen((error) => _set(link, '$error'));
 
     try {
       await session.connect();
