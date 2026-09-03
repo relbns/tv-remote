@@ -122,7 +122,7 @@ src/renderer/       ממשק המשתמש (HTML/CSS/JS, ללא framework)
 ```sh
 TV_REMOTE_DEV=1 npm start     # פותח את החלון מיד + DevTools + לוג שגיאות
 npm run discover              # בדיקת גילוי מכשירים משורת הפקודה
-npm run smoke 192.168.7.11    # בדיקת פרוטוקול ישירה מול ממיר
+npm run smoke 192.168.1.42    # בדיקת פרוטוקול ישירה מול ממיר
 ```
 
 `TV_REMOTE_SHOT=<path>` מרנדר את החלון ל-PNG ויוצא, ו-`TV_REMOTE_SHOT_JS` מריץ
