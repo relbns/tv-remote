@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../protocol/androidtv/pairing.dart';
 import '../protocol/androidtv/remote.dart';
@@ -37,6 +37,13 @@ class RemoteController extends ChangeNotifier {
   AndroidTvRemote? _session;
   AndroidTvPairing? _pairing;
   StreamSubscription<RemoteState>? _stateSub;
+  StreamSubscription<void>? _closedSub;
+  Timer? _retry;
+  AppLifecycleListener? _lifecycle;
+
+  /// True while the app is in the foreground. Reconnecting behind a dark screen
+  /// only burns battery — Android suspends the socket anyway.
+  bool _foreground = true;
 
   List<Device> devices = const [];
   Device? current;
@@ -87,6 +94,18 @@ class RemoteController extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    // The socket does not survive the screen going off: Android suspends the
+    // app and the box drops the session when its pings go unanswered. Coming
+    // back to the foreground is the moment to rebuild it.
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        _foreground = true;
+        if (!isConnected) unawaited(connect());
+      },
+      onHide: () => _foreground = false,
+      onPause: () => _foreground = false,
+    );
+
     devices = _store.devices();
     current ??= devices.isEmpty ? null : devices.first;
     notifyListeners();
@@ -218,6 +237,7 @@ class RemoteController extends ChangeNotifier {
     );
     _session = session;
     _stateSub = session.states.listen(_onState);
+    _closedSub = session.closed.listen((_) => _onSessionClosed());
 
     try {
       await session.connect();
@@ -225,6 +245,7 @@ class RemoteController extends ChangeNotifier {
     } on Object catch (failure) {
       _session = null;
       _set(LinkState.failed, '$failure');
+      _scheduleRetry();
     }
   }
 
@@ -233,15 +254,32 @@ class RemoteController extends ChangeNotifier {
     final package = state.currentApp;
     if (package != null &&
         !_shared.ignoredPackages.contains(package) &&
-        !learned.contains(package) &&
         !_savedPackages.contains(package)) {
-      learned.insert(0, package);
-      if (learned.length > 12) learned.removeLast();
+      unawaited(saveLearned(package));
     }
     notifyListeners();
   }
 
+  /// The session ended on its own. Say so, then try to rebuild it — but only
+  /// while someone is looking at the app.
+  void _onSessionClosed() {
+    if (link == LinkState.connected) _set(LinkState.failed, null);
+    _scheduleRetry();
+  }
+
+  void _scheduleRetry() {
+    _retry?.cancel();
+    if (!_foreground) return;
+    _retry = Timer(const Duration(seconds: 3), () {
+      if (!isConnected && _foreground) unawaited(connect());
+    });
+  }
+
   Future<void> _disconnect() async {
+    _retry?.cancel();
+    _retry = null;
+    await _closedSub?.cancel();
+    _closedSub = null;
     await _stateSub?.cancel();
     _stateSub = null;
     await _session?.close();
@@ -327,20 +365,39 @@ class RemoteController extends ChangeNotifier {
 
   /* ---------------- shortcuts ---------------- */
 
+  /// Shortcuts for the current device — only apps this box has actually been
+  /// seen running.
+  ///
+  /// The protocol cannot be asked what is installed, so a fixed catalogue is a
+  /// guess. What the box does report is the foreground app on every change, and
+  /// an app that ran here is by definition installed here.
   List<AppEntry> shortcuts() {
     final device = current;
     if (device == null) return const [];
-    final saved = _store.shortcuts(device.id);
-    if (saved != null) return saved;
+    return _store.shortcuts(device.id) ?? const [];
+  }
+
+  /// Entries from the shared catalogue that are not saved yet, offered as a
+  /// shortcut for apps you have not opened since installing.
+  List<AppEntry> catalogSuggestions() {
+    final saved = {for (final app in shortcuts()) app.launch};
     return [
       for (final app in _shared.catalog)
-        AppEntry(
-          label: app.label,
-          launch: app.launch,
-          package: app.package,
-          color: app.color,
-        ),
+        if (!saved.contains(app.launch))
+          AppEntry(
+            label: app.label,
+            launch: app.launch,
+            package: app.package,
+            color: app.color,
+          ),
     ];
+  }
+
+  Future<void> addShortcut(AppEntry entry) async {
+    final device = current;
+    if (device == null) return;
+    await _store.saveShortcuts(device.id, [...shortcuts(), entry]);
+    notifyListeners();
   }
 
   Set<String> get _savedPackages => {
@@ -355,17 +412,19 @@ class RemoteController extends ChangeNotifier {
   Future<void> saveLearned(String package) async {
     final device = current;
     if (device == null) return;
-    final entry = AppEntry(
-      label: labelFor(package),
-      launch: AppShortcut.launchTargetFor(package, {
-        for (final app in _shared.catalog)
-          if (app.package != null) app.package!: app.launch,
-      }),
-      package: package,
+
+    final known = _shared.catalog
+        .where((a) => a.package == package)
+        .firstOrNull;
+    await addShortcut(
+      AppEntry(
+        label: known?.label ?? labelFor(package),
+        launch: known?.launch ?? 'intent:#Intent;package=$package;end',
+        package: package,
+        color: known?.color,
+      ),
     );
-    await _store.saveShortcuts(device.id, [...shortcuts(), entry]);
     learned.remove(package);
-    notifyListeners();
   }
 
   Future<void> removeShortcut(AppEntry entry) async {
@@ -396,6 +455,7 @@ class RemoteController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _lifecycle?.dispose();
     unawaited(_sweep?.cancel());
     unawaited(_disconnect());
     unawaited(_pairing?.close());

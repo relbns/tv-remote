@@ -58,6 +58,7 @@ class AndroidTvRemote {
   final _decoder = DelimitedDecoder();
   final _states = StreamController<RemoteState>.broadcast();
   final _errors = StreamController<Object>.broadcast();
+  final _closed = StreamController<void>.broadcast();
 
   Completer<void>? _ready;
   RemoteState _state = const RemoteState();
@@ -69,6 +70,11 @@ class AndroidTvRemote {
 
   /// Protocol errors that do not end the session.
   Stream<Object> get errors => _errors.stream;
+
+  /// Fires when the session ends, for any reason — the phone slept, the box
+  /// powered down, the network moved. Without it the UI keeps showing a live
+  /// connection over a dead socket.
+  Stream<void> get closed => _closed.stream;
 
   RemoteState get state => _state;
   bool get isConnected => _socket != null;
@@ -114,6 +120,7 @@ class AndroidTvRemote {
     await close();
     await _states.close();
     await _errors.close();
+    await _closed.close();
   }
 
   /// Press a key. [keyCode] is an Android `KeyEvent` constant.
@@ -249,7 +256,9 @@ class AndroidTvRemote {
 
   void _finishUnready(Object error) {
     if (_ready?.isCompleted == false) _ready!.completeError(error);
+    final wasConnected = _socket != null;
     _socket = null;
+    if (wasConnected && !_closed.isClosed) _closed.add(null);
   }
 }
 
