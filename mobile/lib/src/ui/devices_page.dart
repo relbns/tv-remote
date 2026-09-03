@@ -1,12 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/controller.dart';
 import '../data/device.dart';
 import '../data/discovery.dart';
-import 'about_sheet.dart';
+import 'settings_sheet.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -19,35 +17,7 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-  final _found = <Discovered>[];
-  StreamSubscription<Discovered>? _sweep;
-  bool _scanning = false;
-
   RemoteController get c => widget.controller;
-
-  @override
-  void dispose() {
-    unawaited(_sweep?.cancel());
-    super.dispose();
-  }
-
-  Future<void> _scan() async {
-    setState(() {
-      _scanning = true;
-      _found.clear();
-    });
-
-    final known = {for (final device in c.devices) device.host};
-    _sweep = Discovery.sweep().listen(
-      (device) {
-        if (known.contains(device.host)) return;
-        if (mounted) setState(() => _found.add(device));
-      },
-      onDone: () {
-        if (mounted) setState(() => _scanning = false);
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -57,13 +27,13 @@ class _DevicesPageState extends State<DevicesPage> {
         children: [
           const Expanded(child: _Label('מכשירים')),
           IconButton(
-            onPressed: () => showAboutSheet(context),
+            onPressed: () => showSettingsSheet(context, c),
             icon: const Icon(
-              Icons.info_outline_rounded,
+              Icons.tune_rounded,
               size: 20,
               color: Palette.inkDim,
             ),
-            tooltip: 'אודות',
+            tooltip: 'הגדרות',
           ),
         ],
       ),
@@ -91,12 +61,16 @@ class _DevicesPageState extends State<DevicesPage> {
       const SizedBox(height: 14),
       Raised(
         radius: Radii.md,
-        onTap: _scanning ? null : _scan,
-        enabled: !_scanning,
+        onTap: c.scanning ? null : c.scan,
+        enabled: !c.scanning,
         padding: const EdgeInsets.symmetric(vertical: 15),
         child: Center(
           child: Text(
-            _scanning ? 'סורק את הרשת…' : 'חפש מכשירים',
+            c.scanning
+                ? 'סורק את הרשת…'
+                : c.found.isEmpty
+                ? 'חפש מכשירים'
+                : 'סרוק שוב',
             style: const TextStyle(
               color: Palette.amber,
               fontWeight: FontWeight.w500,
@@ -104,10 +78,10 @@ class _DevicesPageState extends State<DevicesPage> {
           ),
         ),
       ),
-      if (_found.isNotEmpty) ...[
+      if (c.found.isNotEmpty) ...[
         const SizedBox(height: 18),
         const _Label('נמצאו ברשת'),
-        for (final found in _found) ...[
+        for (final found in c.found) ...[
           _FoundRow(found: found, onAdd: () => _add(found)),
           const SizedBox(height: 8),
         ],
@@ -130,7 +104,7 @@ class _DevicesPageState extends State<DevicesPage> {
         host: found.host,
       ),
     );
-    if (mounted) setState(() => _found.remove(found));
+    c.forgetFound(found);
   }
 
   /// Errors here are things a person has to act on — a wrong code, an

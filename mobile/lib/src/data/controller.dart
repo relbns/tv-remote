@@ -7,6 +7,7 @@ import '../protocol/androidtv/remote.dart';
 import '../protocol/certificate.dart';
 import '../proto/remotemessage.pbenum.dart';
 import 'device.dart';
+import 'discovery.dart';
 import 'shared_data.dart';
 
 enum LinkState { idle, connecting, connected, pairing, failed }
@@ -44,6 +45,45 @@ class RemoteController extends ChangeNotifier {
 
   /// Packages the box has been seen running that are not saved yet.
   final List<String> learned = [];
+
+  /// Results of the last network sweep. Held here rather than in the page so
+  /// they survive a tab change — rescanning a whole subnet to see a list you
+  /// already had is a poor trade.
+  final List<Discovered> found = [];
+  bool scanning = false;
+  StreamSubscription<Discovered>? _sweep;
+
+  int get defaultTab => _store.defaultTab;
+  Future<void> setDefaultTab(int index) async {
+    await _store.setDefaultTab(index);
+    notifyListeners();
+  }
+
+  Future<void> scan() async {
+    if (scanning) return;
+    scanning = true;
+    found.clear();
+    notifyListeners();
+
+    final known = {for (final device in devices) device.host};
+    await _sweep?.cancel();
+    _sweep = Discovery.sweep().listen(
+      (device) {
+        if (known.contains(device.host)) return;
+        found.add(device);
+        notifyListeners();
+      },
+      onDone: () {
+        scanning = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  void forgetFound(Discovered device) {
+    found.remove(device);
+    notifyListeners();
+  }
 
   Future<void> load() async {
     devices = _store.devices();
@@ -303,6 +343,7 @@ class RemoteController extends ChangeNotifier {
 
   @override
   void dispose() {
+    unawaited(_sweep?.cancel());
     unawaited(_disconnect());
     unawaited(_pairing?.close());
     super.dispose();

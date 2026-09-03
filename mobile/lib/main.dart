@@ -61,20 +61,27 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _tab = 0;
+  late int _tab = widget.controller.defaultTab;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: widget.controller,
     builder: (context, _) {
-      final pages = [
-        RemotePage(controller: widget.controller),
-        AppsPage(controller: widget.controller),
-        DevicesPage(controller: widget.controller),
-      ];
-
       return Scaffold(
-        body: SafeArea(bottom: false, child: pages[_tab]),
+        // IndexedStack keeps every tab alive. Swapping widgets instead would
+        // throw away each page's state on every switch — which is what made
+        // discovery results vanish the moment you looked at the remote.
+        body: SafeArea(
+          bottom: false,
+          child: IndexedStack(
+            index: _tab,
+            children: [
+              RemotePage(controller: widget.controller),
+              AppsPage(controller: widget.controller),
+              DevicesPage(controller: widget.controller),
+            ],
+          ),
+        ),
         bottomNavigationBar: _TabBar(
           index: _tab,
           onChanged: (index) => setState(() => _tab = index),

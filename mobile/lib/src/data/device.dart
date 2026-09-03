@@ -120,6 +120,13 @@ class DeviceStore {
   Future<void> saveCertificate(String deviceId, ClientCertificate cert) =>
       _secure.write(key: 'cert.$deviceId', value: jsonEncode(cert.toJson()));
 
+  /* ---------------- preferences ---------------- */
+
+  /// Which tab the app opens on. Defaults to the remote: that is what the app
+  /// is for, and the other tabs are places you visit once.
+  int get defaultTab => _prefs.getInt('defaultTab') ?? 0;
+  Future<void> setDefaultTab(int index) => _prefs.setInt('defaultTab', index);
+
   /* ---------------- app shortcuts ---------------- */
 
   List<AppEntry>? shortcuts(String deviceId) {
