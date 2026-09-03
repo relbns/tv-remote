@@ -79,10 +79,12 @@ class _DevicesPageState extends State<DevicesPage> {
         _DeviceRow(
           device: device,
           paired: c.isPaired(device),
+          supported: device.kind == DeviceKind.androidtv,
           selected: c.current?.id == device.id,
           onSelect: () => c.select(device),
           onPair: () => _pair(device),
-          onRemove: () => c.remove(device.id),
+          onRename: () => _rename(device),
+          onRemove: () => _confirmRemove(device),
         ),
         const SizedBox(height: 8),
       ],
@@ -131,12 +133,112 @@ class _DevicesPageState extends State<DevicesPage> {
     if (mounted) setState(() => _found.remove(found));
   }
 
+  /// Errors here are things a person has to act on — a wrong code, an
+  /// unreachable device — so they stay up long enough to read and can be
+  /// dismissed deliberately.
+  void _showError(ScaffoldMessengerState messenger, String message) {
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 12),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(14),
+        action: SnackBarAction(
+          label: 'סגור',
+          onPressed: messenger.hideCurrentSnackBar,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _rename(Device device) async {
+    final controller = TextEditingController(text: device.name);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Palette.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.lg),
+        ),
+        title: const Text('שם המכשיר', style: TextStyle(fontSize: 17)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            const Text(
+              'תן לו שם שאומר לך משהו — למשל "סלון" או "בית של אמא".',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: Palette.inkMid,
+                height: 1.6,
+              ),
+            ),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(hintText: 'שם'),
+              onSubmitted: (value) => Navigator.pop(dialogContext, value),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('ביטול', style: TextStyle(color: Palette.inkDim)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('שמור', style: TextStyle(color: Palette.amber)),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name != null) await c.rename(device, name);
+  }
+
+  /// Removing a device throws away its pairing certificate, and pairing again
+  /// means walking to the television — worth a question first.
+  Future<void> _confirmRemove(Device device) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Palette.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.lg),
+        ),
+        title: Text(
+          'להסיר את ${device.name}?',
+          style: const TextStyle(fontSize: 17),
+        ),
+        content: const Text(
+          'הצימוד יימחק. כדי לחבר את המכשיר מחדש תצטרך לצמד אותו שוב מול '
+          'הקוד שיופיע על המסך.',
+          style: TextStyle(fontSize: 13, color: Palette.inkMid, height: 1.65),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ביטול', style: TextStyle(color: Palette.inkDim)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('הסר', style: TextStyle(color: Palette.dead)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) await c.remove(device.id);
+  }
+
   Future<void> _pair(Device device) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await c.beginPairing(device);
     } on Object catch (failure) {
-      messenger.showSnackBar(SnackBar(content: Text('$failure')));
+      _showError(messenger, '$failure');
       return;
     }
     if (!mounted) return;
@@ -156,7 +258,7 @@ class _DevicesPageState extends State<DevicesPage> {
       await c.submitCode(device, code);
       messenger.showSnackBar(const SnackBar(content: Text('הצימוד הושלם')));
     } on Object catch (failure) {
-      messenger.showSnackBar(SnackBar(content: Text('$failure')));
+      _showError(messenger, '$failure');
     }
   }
 }
@@ -165,26 +267,32 @@ class _DeviceRow extends StatelessWidget {
   const _DeviceRow({
     required this.device,
     required this.paired,
+    required this.supported,
     required this.selected,
     required this.onSelect,
     required this.onPair,
+    required this.onRename,
     required this.onRemove,
   });
 
   final Device device;
   final bool paired;
+
+  /// Whether this platform has a driver for the device's protocol.
+  final bool supported;
   final bool selected;
   final VoidCallback onSelect;
   final VoidCallback onPair;
+  final VoidCallback onRename;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) => Raised(
     radius: Radii.md,
     onTap: paired ? onSelect : null,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
     child: Row(
-      spacing: 12,
+      spacing: 10,
       children: [
         Lamp(color: selected ? Palette.live : Palette.inkDim),
         Expanded(
@@ -206,13 +314,35 @@ class _DeviceRow extends StatelessWidget {
         if (!paired)
           TextButton(
             onPressed: onPair,
-            child: const Text('צמד', style: TextStyle(color: Palette.amber)),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(0, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+            child: Text(
+              // A device whose protocol has no driver here must not offer a
+              // button that can only fail.
+              supported ? 'צמד' : 'בקרוב',
+              style: TextStyle(
+                color: supported ? Palette.amber : Palette.inkDim,
+              ),
+            ),
           ),
         IconButton(
+          onPressed: onRename,
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(
+            Icons.edit_outlined,
+            size: 18,
+            color: Palette.inkDim,
+          ),
+          tooltip: 'שנה שם',
+        ),
+        IconButton(
           onPressed: onRemove,
+          visualDensity: VisualDensity.compact,
           icon: const Icon(
             Icons.delete_outline_rounded,
-            size: 20,
+            size: 19,
             color: Palette.inkDim,
           ),
           tooltip: 'הסר',

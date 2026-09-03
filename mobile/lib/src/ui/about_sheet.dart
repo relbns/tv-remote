@@ -15,6 +15,10 @@ Future<void> showAboutSheet(BuildContext context) => showModalBottomSheet<void>(
   context: context,
   backgroundColor: Palette.surface,
   showDragHandle: true,
+  // Without these the sheet runs under the navigation bar and its last button
+  // cannot be reached, and tall content is clipped instead of scrolling.
+  useSafeArea: true,
+  isScrollControlled: true,
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
   ),
@@ -27,7 +31,7 @@ class _AboutSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SafeArea(
     top: false,
-    child: Padding(
+    child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,

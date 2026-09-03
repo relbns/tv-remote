@@ -68,7 +68,9 @@ class RemoteController extends ChangeNotifier {
     if (trimmed.isEmpty) return;
     await _store.upsert(device.copyWith(name: trimmed));
     devices = _store.devices();
-    if (current?.id == device.id) current = devices.firstWhere((d) => d.id == device.id);
+    if (current?.id == device.id) {
+      current = devices.firstWhere((d) => d.id == device.id);
+    }
     notifyListeners();
   }
 
