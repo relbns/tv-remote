@@ -39,10 +39,12 @@ class Discovery {
       while (queue.isNotEmpty) {
         final host = queue.removeAt(0);
         for (final entry in _ports.entries) {
-          if (await _isOpen(host, entry.key)) {
-            controller.add(Discovered(kind: entry.value, host: host));
-            break; // one device, one kind
+          if (!await _isOpen(host, entry.key)) continue;
+          if (entry.value == DeviceKind.webos && !await _isWebos(host)) {
+            continue; // port was open, but nothing behind it is a television
           }
+          controller.add(Discovered(kind: entry.value, host: host));
+          break; // one device, one kind
         }
       }
     }
@@ -81,6 +83,28 @@ class Discovery {
       final socket = await Socket.connect(host, port, timeout: _probeTimeout);
       socket.destroy();
       return true;
+    } on Object {
+      return false;
+    }
+  }
+
+  /// An open port is not an identification.
+  ///
+  /// Ports 3000 and 3001 are among the most common in use — a Node server on
+  /// the same network was being offered as a television. A real webOS set
+  /// answers 3001 with TLS and presents a certificate issued to LG, which is
+  /// cheap to check and cannot be confused with an ordinary web server.
+  static Future<bool> _isWebos(String host) async {
+    try {
+      final socket = await SecureSocket.connect(
+        host,
+        3001,
+        timeout: _probeTimeout,
+        onBadCertificate: (_) => true,
+      );
+      final subject = socket.peerCertificate?.subject ?? '';
+      socket.destroy();
+      return subject.toUpperCase().contains('LG ELECTRONICS');
     } on Object {
       return false;
     }
