@@ -6,6 +6,7 @@ import '../protocol/androidtv/pairing.dart';
 import '../protocol/androidtv/remote.dart';
 import '../protocol/certificate.dart';
 import '../proto/remotemessage.pbenum.dart';
+import 'backup.dart';
 import 'device.dart';
 import 'discovery.dart';
 import 'shared_data.dart';
@@ -276,6 +277,53 @@ class RemoteController extends ChangeNotifier {
   void sendText(String text) => _session?.sendText(text);
 
   void launch(String target) => _session?.sendAppLink(target);
+
+  /* ---------------- backup ---------------- */
+
+  /// Collect the current setup for transfer to another phone.
+  Future<Backup> buildBackup({required bool includeCredentials}) async {
+    final certificates = <String, ClientCertificate>{};
+    if (includeCredentials) {
+      for (final device in devices) {
+        final certificate = await _store.certificate(device.id);
+        if (certificate == null) continue;
+        certificates[device.id] = certificate;
+      }
+    }
+
+    return Backup(
+      devices: devices,
+      shortcuts: {
+        for (final device in devices) device.id: ?_store.shortcuts(device.id),
+      },
+      defaultTab: _store.defaultTab,
+      certificates: certificates,
+    );
+  }
+
+  /// Merge a backup into this phone. Returns how many devices it added or
+  /// updated. Existing pairings are kept unless the backup carries one, so
+  /// importing settings can never cost you a pairing you already have.
+  Future<int> applyBackup(Backup backup) async {
+    for (final device in backup.devices) {
+      await _store.upsert(device);
+    }
+    for (final entry in backup.shortcuts.entries) {
+      await _store.saveShortcuts(entry.key, entry.value);
+    }
+    for (final entry in backup.certificates.entries) {
+      await _store.saveCertificate(entry.key, entry.value);
+      _paired.add(entry.key);
+    }
+    await _store.setDefaultTab(backup.defaultTab);
+
+    devices = _store.devices();
+    current ??= devices.isEmpty ? null : devices.first;
+    notifyListeners();
+
+    if (current != null && isPaired(current!)) unawaited(connect());
+    return backup.devices.length;
+  }
 
   /* ---------------- shortcuts ---------------- */
 

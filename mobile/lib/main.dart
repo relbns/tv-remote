@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'src/data/controller.dart';
 import 'src/data/device.dart';
@@ -44,11 +45,17 @@ class TvRemoteApp extends StatelessWidget {
     title: 'שלט טלוויזיה',
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
+    // Real localisation rather than a Directionality around the home widget:
+    // a pushed route is a new route at this level and would not inherit it, so
+    // every screen opened with Navigator.push came up left-to-right.
     locale: const Locale('he'),
-    home: Directionality(
-      textDirection: TextDirection.rtl,
-      child: HomeShell(controller: controller),
-    ),
+    supportedLocales: const [Locale('he'), Locale('en')],
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    home: HomeShell(controller: controller),
   );
 }
 

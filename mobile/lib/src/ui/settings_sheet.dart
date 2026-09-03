@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/controller.dart';
 import 'about_sheet.dart';
+import 'transfer_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -91,6 +92,17 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                 ),
               ),
             const SizedBox(height: 8),
+            Pill(
+              label: 'העברה למכשיר אחר',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => TransferPage(controller: widget.controller),
+                  ),
+                );
+              },
+            ),
             Pill(
               label: 'אודות',
               onTap: () {
