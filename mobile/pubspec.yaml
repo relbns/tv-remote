@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 0.1.0+1
 
 environment:
   sdk: ^3.13.2
@@ -41,10 +41,11 @@ dependencies:
   basic_utils: ^5.8.2           # pure-Dart X.509: the pairing certificate is made at run time
   pointycastle: ^4.0.0          # crypto primitives behind basic_utils
   web_socket_channel: ^3.0.3    # LG SSAP and Samsung Tizen
-  multicast_dns: ^0.3.3         # device discovery
 
   # --- storage ---
-  flutter_secure_storage: ^11.0.0   # pairing certificates and tokens
+  # Pinned to 10.x: 11.0.0 requires compileSdk 37, which is past what the
+  # Android Gradle plugin Flutter ships with supports.
+  flutter_secure_storage: ^10.3.1
   shared_preferences: ^2.5.5        # devices, sets, app shortcuts
 
 dev_dependencies:
@@ -73,6 +74,15 @@ flutter:
   # Populated by tool/sync_shared.sh from the repository's ../shared directory.
   assets:
     - assets/shared/
+
+  # Rubik: geometric with softened terminals and full Hebrew coverage — the
+  # opposite of the default Material look. Bundled rather than fetched so the
+  # app never depends on the internet for its own typography. OFL, see
+  # assets/fonts/OFL.txt.
+  fonts:
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
