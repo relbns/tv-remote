@@ -6,12 +6,15 @@ import 'certificate.dart';
 
 /// The pairing digest.
 ///
+/// Named for what it is rather than after the protobuf message it travels in;
+/// the generated `PairingSecret` class already owns that name.
+///
 /// The box shows six hexadecimal characters. The first byte of that code is a
 /// checksum; the remaining two bytes are mixed into a SHA-256 over both
 /// certificates' public numbers. The box computes the same digest and compares,
 /// which is what proves the person holding the remote can see the screen.
-class PairingSecret {
-  const PairingSecret._(this.digest, this.checksumMatches);
+class PairingDigest {
+  const PairingDigest._(this.digest, this.checksumMatches);
 
   /// The bytes to put in the PairingSecret message.
   final Uint8List digest;
@@ -27,7 +30,7 @@ class PairingSecret {
 }
 
 /// Build the digest for [code] — six hex characters as displayed on the screen.
-PairingSecret computePairingSecret({
+PairingDigest computePairingSecret({
   required String code,
   required String clientCertificatePem,
   required String serverCertificatePem,
@@ -51,7 +54,7 @@ PairingSecret computePairingSecret({
     ..add(codeBytes.sublist(1));
 
   final digest = Uint8List.fromList(sha256.convert(input.toBytes()).bytes);
-  return PairingSecret._(digest, digest.first == codeBytes.first);
+  return PairingDigest._(digest, digest.first == codeBytes.first);
 }
 
 Uint8List _hexToBytes(String hex) => Uint8List.fromList([

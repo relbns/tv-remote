@@ -85,8 +85,9 @@ class RsaPublicNumbers {
 RsaPublicNumbers publicNumbersFromPem(String pem) {
   final data = X509Utils.x509CertificateFromPem(pem);
   final hex = data.tbsCertificate?.subjectPublicKeyInfo.bytes;
-  if (hex == null)
+  if (hex == null) {
     throw const FormatException('לתעודה אין SubjectPublicKeyInfo');
+  }
 
   final key = CryptoUtils.rsaPublicKeyFromDERBytes(_hexToBytes(hex));
   return RsaPublicNumbers(
@@ -103,7 +104,9 @@ RsaPublicNumbers publicNumbersFromPem(String pem) {
 /// produces a valid-looking digest that the box always rejects.
 Uint8List bigIntToBytes(BigInt value) {
   var hex = value.toRadixString(16);
-  if (hex.length.isOdd) hex = '0$hex';
+  if (hex.length.isOdd) {
+    hex = '0$hex';
+  }
   return _hexToBytes(hex);
 }
 
