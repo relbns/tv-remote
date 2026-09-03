@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../data/controller.dart';
 import '../data/device.dart';
 import '../data/discovery.dart';
+import 'about_sheet.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -51,7 +52,20 @@ class _DevicesPageState extends State<DevicesPage> {
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
     children: [
-      const _Label('מכשירים'),
+      Row(
+        children: [
+          const Expanded(child: _Label('מכשירים')),
+          IconButton(
+            onPressed: () => showAboutSheet(context),
+            icon: const Icon(
+              Icons.info_outline_rounded,
+              size: 20,
+              color: Palette.inkDim,
+            ),
+            tooltip: 'אודות',
+          ),
+        ],
+      ),
       if (c.devices.isEmpty)
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 18),
@@ -174,6 +188,7 @@ class _DeviceRow extends StatelessWidget {
         Lamp(color: selected ? Palette.live : Palette.inkDim),
         Expanded(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -222,6 +237,7 @@ class _FoundRow extends StatelessWidget {
         const Lamp(color: Palette.amber),
         Expanded(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(

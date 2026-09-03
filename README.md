@@ -83,6 +83,7 @@ CEC, והדלקה מרחוק. הקבצים כאן הם עותק, לא המקור
 | --- | --- |
 | [docs/SIGNING.md](docs/SIGNING.md) | מפתח החתימה: יצירה, גיבוי, אימות, ומה קורה אם הוא אובד |
 | [docs/RELEASING.md](docs/RELEASING.md) | חיתוך גרסה ושחרור אוטומטי בתגית |
+| [docs/WEBSITE.md](docs/WEBSITE.md) | קישור הורדה קבוע וקטע להטמעה באתר |
 | [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) | הפצה בלי חנות, וחשבון ההפצה המוגבלת החינמי |
 | [docs/ICONS.md](docs/ICONS.md) | מה לייצר, פרומפטים ל-AI, והאילוץ של Adaptive Icon |
 

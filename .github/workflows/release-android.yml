@@ -43,14 +43,23 @@ jobs:
           keyAlias=$KEY_ALIAS
           EOF
 
+      # Per-ABI builds as well: the universal APK carries three architectures
+      # and is three times the size, which is where a phone download gives up.
+      - run: flutter build apk --release --split-per-abi
+        working-directory: mobile
       - run: flutter build apk --release
         working-directory: mobile
 
-      - name: שם קובץ לפי הגרסה
+      - name: שמות קבצים
         id: name
         run: |
           version="${GITHUB_REF_NAME#android-v}"
-          cp mobile/build/app/outputs/flutter-apk/app-release.apk "tv-remote-$version.apk"
+          out=mobile/build/app/outputs/flutter-apk
+          # Unversioned names keep /releases/latest/download/<name> a permanent
+          # link that survives every release — that is what a website links to.
+          cp "$out/app-arm64-v8a-release.apk" tv-remote-arm64.apk
+          cp "$out/app-release.apk"           tv-remote-universal.apk
+          cp "$out/app-arm64-v8a-release.apk" "tv-remote-$version-arm64.apk"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: softprops/action-gh-release@v2
@@ -61,5 +70,8 @@ jobs:
           body: |
             ## התקנה
 
-            הורד את קובץ ה-APK לטלפון ופתח אותו. באנדרואיד יופיע אישור חד־פעמי
-            להתקנה ממקור לא מוכר — זה תקין לאפליקציה שלא מגיעה מחנות.
+            הורד את **tv-remote-arm64.apk** (18MB, מתאים לכל טלפון מ-2016 והלאה)
+            ופתח אותו. באנדרואיד יופיע אישור חד־פעמי להתקנה ממקור לא מוכר — זה
+            תקין לאפליקציה שלא מגיעה מחנות.
+
+            `tv-remote-universal.apk` גדול פי שלושה ונחוץ רק למכשיר ישן במיוחד.

@@ -42,6 +42,10 @@ dependencies:
   pointycastle: ^4.0.0          # crypto primitives behind basic_utils
   web_socket_channel: ^3.0.3    # LG SSAP and Samsung Tizen
 
+  # --- about screen ---
+  package_info_plus: ^10.2.1     # reads the real installed version, not a copy
+  url_launcher: ^6.3.2
+
   # --- storage ---
   # Pinned to 10.x: 11.0.0 requires compileSdk 37, which is past what the
   # Android Gradle plugin Flutter ships with supports.

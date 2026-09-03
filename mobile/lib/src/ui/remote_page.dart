@@ -218,6 +218,7 @@ class _Header extends StatelessWidget {
           Lamp(color: color),
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -331,6 +332,7 @@ class _AppShelf extends StatelessWidget {
     if (apps.isEmpty) return const SizedBox.shrink();
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(

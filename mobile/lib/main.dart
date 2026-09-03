@@ -13,6 +13,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
+  // Android 15 draws every app behind the system bars. Make them transparent
+  // and let SafeArea inset the content, rather than fighting the platform.
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
   final shared = await SharedData.load();
   final store = await DeviceStore.open();
   final controller = RemoteController(store, shared);
@@ -61,7 +74,7 @@ class _HomeShellState extends State<HomeShell> {
       ];
 
       return Scaffold(
-        body: SafeArea(child: pages[_tab]),
+        body: SafeArea(bottom: false, child: pages[_tab]),
         bottomNavigationBar: _TabBar(
           index: _tab,
           onChanged: (index) => setState(() => _tab = index),
@@ -105,6 +118,7 @@ class _TabBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(Radii.sm),
                   ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     spacing: 4,
                     children: [
                       Icon(
