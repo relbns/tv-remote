@@ -33,7 +33,8 @@ base64 -i ~/tv-remote-upload.jks | pbcopy
 **ודא שהגיבוי עובד** לפני שאתה סומך עליו — העתק את תוכן ההערה מהכספת, ואז:
 
 ```sh
-./tools/verify-keystore-backup.sh
+./tools/verify-keystore-backup.sh              # קורא מהלוח
+./tools/verify-keystore-backup.sh --file note.txt   # אם הלוח מתנקה
 ```
 
 הסקריפט מפענח את מה שבלוח, קורא את הקובץ המשוחזר ומדפיס את טביעת האצבע שלו.
