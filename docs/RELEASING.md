@@ -14,6 +14,35 @@ keytool -genkey -v -keystore ~/tv-remote-upload.jks \
 שמור אותו **מחוץ לריפו** ובגיבוי נפרד (מנהל סיסמאות או כונן מגובה).
 `.gitignore` חוסם `*.jks` ו-`key.properties`, אבל אל תסמוך על זה לבד.
 
+### גיבוי לכספת סיסמאות
+
+קובץ keystore טיפוסי הוא ~2.7KB, שהם ~3,700 תווים ב-base64 — מתחת למגבלת
+שדה ההערות של Bitwarden (10,000, ובפועל נמוך יותר). כלומר אפשר לגבות אותו
+כ-**Secure Note** בלי לשלם על קבצים מצורפים, שהם תכונת Premium.
+
+```sh
+# טביעת אצבע — לאימות עתידי שהשחזור הצליח
+keytool -list -v -keystore ~/tv-remote-upload.jks -alias upload | grep -i "SHA256:"
+
+# הקובץ עצמו ללוח
+base64 -i ~/tv-remote-upload.jks | pbcopy
+```
+
+בהערה שמור גם את ה-alias, הסיסמאות וטביעת האצבע — הקובץ לבדו חסר ערך.
+
+**ודא שהגיבוי עובד** לפני שאתה סומך עליו:
+
+```sh
+pbpaste | tail -1 | base64 -D > /tmp/restore-test.jks
+keytool -list -v -keystore /tmp/restore-test.jks -alias upload | grep -i "SHA256:"
+rm /tmp/restore-test.jks
+```
+
+טביעת אצבע זהה = הגיבוי תקף.
+
+אל תשתמש ב-Bitwarden Send לזה: Sends פגים אחרי 31 יום לכל היותר. זה שיתוף,
+לא גיבוי.
+
 ## בנייה מקומית
 
 ```sh
