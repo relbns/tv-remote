@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/controller.dart';
 import '../data/device.dart';
@@ -298,6 +299,18 @@ class _CodeDialogState extends State<_CodeDialog> {
           maxLength: 6,
           textAlign: TextAlign.center,
           textCapitalization: TextCapitalization.characters,
+          // The code is hexadecimal, so ask for a Latin keyboard and reject
+          // anything that cannot appear in one. Without this the phone offers
+          // its Hebrew layout, where none of the keys are usable.
+          keyboardType: TextInputType.visiblePassword,
+          autocorrect: false,
+          enableSuggestions: false,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp('[0-9a-fA-F]')),
+            TextInputFormatter.withFunction(
+              (_, next) => next.copyWith(text: next.text.toUpperCase()),
+            ),
+          ],
           style: const TextStyle(
             fontSize: 22,
             letterSpacing: 8,

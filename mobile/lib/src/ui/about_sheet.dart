@@ -59,7 +59,13 @@ class _AboutSheet extends StatelessWidget {
           const SizedBox(height: 2),
           const _Row(label: 'פיתוח', value: 'relbns'),
           const _Row(label: 'רישיון', value: 'MIT'),
-          const _Row(label: 'מזהה חבילה', value: 'co.singalong.tv_remote'),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) => _Row(
+              label: 'מזהה חבילה',
+              value: snapshot.data?.packageName ?? '—',
+            ),
+          ),
           const SizedBox(height: 4),
           Pill(label: 'קוד המקור ב-GitHub', onTap: () => _open(_repo)),
           Pill(label: 'דיווח על תקלה', onTap: () => _open('$_repo/issues')),

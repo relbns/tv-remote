@@ -11,6 +11,17 @@ import 'shared_data.dart';
 
 enum LinkState { idle, connecting, connected, pairing, failed }
 
+/// Raised when a device's protocol is not implemented on this platform yet.
+class UnsupportedDeviceException implements Exception {
+  const UnsupportedDeviceException(this.kind);
+  final DeviceKind kind;
+
+  @override
+  String toString() =>
+      'שליטה ב${kind.label} עדיין לא נתמכת באפליקציית האנדרואיד. '
+      'היא כבר עובדת באפליקציית ה-Mac.';
+}
+
 /// Everything the screens read and act on.
 ///
 /// One box is active at a time: a session holds an open TLS socket and answers
@@ -50,6 +61,17 @@ class RemoteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Give a device a name that means something to the person using it —
+  /// "סלון" beats "ממיר" once there is more than one house involved.
+  Future<void> rename(Device device, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    await _store.upsert(device.copyWith(name: trimmed));
+    devices = _store.devices();
+    if (current?.id == device.id) current = devices.firstWhere((d) => d.id == device.id);
+    notifyListeners();
+  }
+
   Future<void> remove(String id) async {
     if (current?.id == id) await _disconnect();
     await _store.remove(id);
@@ -82,6 +104,12 @@ class RemoteController extends ChangeNotifier {
 
   /// Start pairing; resolves once the box is showing its code.
   Future<void> beginPairing(Device device) async {
+    // Only Android TV has a driver on this platform so far. Running its
+    // handshake against a webOS or Tizen set just produces a refused socket,
+    // which is what shipping a button with nothing behind it looks like.
+    if (device.kind != DeviceKind.androidtv) {
+      throw UnsupportedDeviceException(device.kind);
+    }
     await _disconnect();
     _set(LinkState.pairing, null);
 

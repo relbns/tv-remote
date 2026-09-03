@@ -1,4 +1,4 @@
-package co.singalong.tv_remote
+package io.benesh.tvremote
 
 import io.flutter.embedding.android.FlutterActivity
 

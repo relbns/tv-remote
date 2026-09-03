@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter's template declares INTERNET only in the debug and profile
+         manifests, so a release build silently has no network at all: every
+         socket fails and the app looks broken rather than unpermitted.
+         This app talks TCP to devices on the local network only. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="שלט טלוויזיה"
         android:name="${applicationName}"

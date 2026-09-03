@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>שלט טלוויזיה</title>
+<meta name="description" content="שלט לממירי Android TV ולטלוויזיות חכמות. רץ ברשת הביתית — בלי ענן, בלי חשבון.">
+<meta property="og:title" content="שלט טלוויזיה">
+<meta property="og:description" content="שלט לממירי Android TV ולטלוויזיות חכמות. רץ ברשת הביתית.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0B0E14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ground:#0B0E14; --lift:#10141C; --surface:#171C26; --surface-hi:#1E2531;
+    --ink:#ECE9E3; --ink-mid:#9AA1AE; --ink-dim:#646C7A;
+    --amber:#E9A93F; --amber-deep:#C4832A; --amber-wash:rgba(233,169,63,.13);
+    --edge:rgba(255,255,255,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ground);color:var(--ink);
+    font-family:Rubik,-apple-system,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--amber)}
+
+  .wrap{max-width:660px;margin:0 auto;padding:56px 22px 72px}
+
+  /* ---- hero ---- */
+  .hero{text-align:center;position:relative}
+  .hero::before{content:"";position:absolute;inset:-90px -40px auto;height:280px;
+    background:radial-gradient(50% 60% at 50% 40%,rgba(233,169,63,.14),transparent 70%);
+    pointer-events:none}
+  .mark{width:88px;height:88px;margin:0 auto 22px;border-radius:50%;position:relative;
+    background:conic-gradient(var(--amber) 0 23%,transparent 0 27%,var(--amber) 0 48%,
+      transparent 0 52%,var(--amber) 0 73%,transparent 0 77%,var(--amber) 0);
+    -webkit-mask:radial-gradient(circle,#000 25%,transparent 26%,#000 42%,transparent 43%);
+            mask:radial-gradient(circle,#000 25%,transparent 26%,#000 42%,transparent 43%)}
+  h1{font-size:clamp(28px,7vw,38px);font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
+  .lede{color:var(--ink-mid);font-size:16px;line-height:1.75;margin:0 auto;max-width:44ch}
+
+  /* ---- download ---- */
+  .get{margin:36px 0 10px}
+  .btn{display:block;text-decoration:none;text-align:center;font-weight:600;font-size:17px;
+    color:#2A1D08;background:linear-gradient(180deg,#F2BC5C,var(--amber) 46%,var(--amber-deep));
+    padding:19px;border-radius:18px;
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 10px 28px rgba(233,169,63,.22);
+    transition:transform .12s ease,filter .12s ease}
+  .btn:hover{filter:brightness(1.05)} .btn:active{transform:scale(.985)}
+  .btn small{display:block;font-weight:400;font-size:13px;opacity:.72;margin-top:3px}
+  .alt{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--ink-dim);
+    text-decoration:none}
+  .alt:hover{color:var(--ink-mid)}
+
+  /* ---- steps ---- */
+  h2{font-size:15px;font-weight:600;color:var(--ink-mid);margin:52px 0 16px;
+    letter-spacing:.02em}
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+  ol.steps li{counter-increment:s;background:var(--surface);border-radius:16px;
+    padding:16px 18px 16px 18px;display:grid;grid-template-columns:26px 1fr;gap:14px;
+    align-items:start;font-size:14.5px;line-height:1.65;box-shadow:0 6px 16px rgba(0,0,0,.28)}
+  ol.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
+    background:var(--amber-wash);color:var(--amber);font-size:13px;font-weight:600;
+    display:grid;place-items:center}
+  ol.steps b{font-weight:600}
+
+  /* ---- features ---- */
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .card{background:var(--surface);border-radius:16px;padding:16px 18px;
+    box-shadow:0 6px 16px rgba(0,0,0,.28)}
+  .card h3{margin:0 0 5px;font-size:14.5px;font-weight:600}
+  .card p{margin:0;font-size:13px;line-height:1.65;color:var(--ink-mid)}
+
+  /* ---- note ---- */
+  .note{margin-top:16px;background:var(--amber-wash);border-radius:14px;padding:14px 18px;
+    font-size:13px;line-height:1.7;color:var(--ink-mid)}
+  .note b{color:var(--amber)}
+
+  footer{margin-top:56px;padding-top:26px;border-top:1px solid var(--edge);
+    display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;
+    font-size:13px;color:var(--ink-dim)}
+  footer a{text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .ver{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="mark" role="img" aria-label="סמל האפליקציה"></div>
+    <h1>שלט טלוויזיה</h1>
+    <p class="lede">
+      שלט לממירי Android TV ולטלוויזיות חכמות, ישירות מהטלפון.
+      הכל רץ ברשת הביתית — בלי ענן, בלי חשבון, בלי שרת באמצע.
+    </p>
+  </header>
+
+  <div class="get">
+    <a class="btn" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk">
+      הורד לאנדרואיד
+      <small>APK · כ-18MB</small>
+    </a>
+    <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-universal.apk">
+      לא נתמך במכשיר שלך? נסה את הגרסה האוניברסלית (52MB)
+    </a>
+  </div>
+
+  <h2>התקנה</h2>
+  <ol class="steps">
+    <li><span>פתח את הקובץ שהורדת. אנדרואיד יבקש <b>אישור חד־פעמי</b> להתקנה ממקור לא מוכר — זה תקין לאפליקציה שאינה מגיעה מחנות.</span></li>
+    <li><span>ודא שהטלפון והממיר על <b>אותה רשת Wi-Fi</b>. בלי זה הם לא רואים זה את זה.</span></li>
+    <li><span>פתח את האפליקציה, עבור ללשונית <b>מכשירים</b>, לחץ <b>חפש מכשירים</b> ואז <b>צמד</b>. הקלד את הקוד בן שישה התווים שיופיע על מסך הטלוויזיה — פעם אחת בלבד.</span></li>
+  </ol>
+
+  <h2>מה היא עושה</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>ניווט בהחלקה</h3>
+      <p>טבעת אחת רציפה שמגיבה גם ללחיצה וגם להחלקת אצבע, במקום ארבעה כפתורים קטנים לכוון אליהם.</p>
+    </div>
+    <div class="card">
+      <h3>הקלדה אמיתית</h3>
+      <p>חיפוש נשלח כמחרוזת שלמה בבת אחת, במקום לנווט על מקלדת המסך תו אחרי תו.</p>
+    </div>
+    <div class="card">
+      <h3>אפליקציות שנלמדות</h3>
+      <p>פתח אפליקציה עם השלט הרגיל והיא תוצע לשמירה כקיצור. הפרוטוקול לא יודע למנות אפליקציות — אז היא לומדת.</p>
+    </div>
+    <div class="card">
+      <h3>גם הטלוויזיה</h3>
+      <p>כיבוי ובחירת מקור מועברים לטלוויזיה בכבל ה-HDMI בתקן CEC, גם כשאין לה חיבור רשת משלה.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>שום דבר לא עוזב את הבית.</b> האפליקציה מדברת ישירות עם הממיר ברשת המקומית.
+    אין חשבון, אין שרת, ואין נתונים שנשלחים לשום מקום.
+  </div>
+
+  <footer>
+    <a href="https://github.com/relbns/tv-remote">קוד המקור</a>
+    <a href="https://github.com/relbns/tv-remote/releases">כל הגרסאות</a>
+    <a href="https://github.com/relbns/tv-remote/issues">דיווח על תקלה</a>
+    <span>MIT · relbns</span>
+  </footer>
+
+</div>
+</body>
+</html>

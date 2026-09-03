@@ -18,7 +18,7 @@ if (hasReleaseKey) {
 }
 
 android {
-    namespace = "co.singalong.tv_remote"
+    namespace = "io.benesh.tvremote"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "co.singalong.tv_remote"
+        applicationId = "io.benesh.tvremote"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
