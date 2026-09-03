@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +8,13 @@ import 'theme.dart';
 import 'widgets/controls.dart';
 
 const _repo = 'https://github.com/relbns/tv-remote';
+
+/// Wrap a Latin run so the bidirectional algorithm treats it as one unit.
+///
+/// Without this, "GitHub" or "louis49/androidtv-remote" inside a Hebrew
+/// sentence drags the neighbouring punctuation across the line and the text
+/// reads scrambled. U+2068 opens a first-strong isolate, U+2069 closes it.
+String _ltr(String text) => '\u2068$text\u2069';
 
 /// Shows what this build is and where it came from.
 ///
@@ -71,12 +80,12 @@ class _AboutSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Pill(label: 'קוד המקור ב-GitHub', onTap: () => _open(_repo)),
-          Pill(label: 'דיווח על תקלה', onTap: () => _open('$_repo/issues')),
+          Pill(label: 'קוד המקור', onTap: () => _open(_repo)),
+          Pill(label: 'דיווח על תקלה', onTap: _reportIssue),
           const SizedBox(height: 6),
-          const Text(
-            'הפרוטוקול של Android TV Remote v2 אינו מתועד רשמית. הסכמות '
-            'שבשימוש פוענחו על ידי louis49/androidtv-remote.',
+          Text(
+            'הפרוטוקול של ${_ltr('Android TV Remote v2')} אינו מתועד רשמית. '
+            'הסכמות שבשימוש פוענחו על ידי ${_ltr('louis49/androidtv-remote')}.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11.5,
@@ -88,6 +97,20 @@ class _AboutSheet extends StatelessWidget {
       ),
     ),
   );
+
+  /// Opens a new issue with the details a bug report is useless without:
+  /// which build, which phone, which Android. Typing those by hand is exactly
+  /// what people skip.
+  static Future<void> _reportIssue() async {
+    final info = await PackageInfo.fromPlatform();
+    final body =
+        '\n\n---\n'
+        '- אפליקציה: ${info.version} (${info.buildNumber})\n'
+        '- מערכת: ${Platform.operatingSystemVersion}\n';
+    final uri = Uri.parse('$_repo/issues/new')
+        .replace(queryParameters: {'title': '', 'body': body});
+    await _open(uri.toString());
+  }
 
   static Future<void> _open(String url) async {
     final uri = Uri.parse(url);
