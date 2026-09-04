@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../data/controller.dart';
 import '../data/device.dart';
 import '../data/discovery.dart';
+import '../data/target.dart';
 import 'settings_sheet.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
@@ -49,10 +50,11 @@ class _DevicesPageState extends State<DevicesPage> {
         _DeviceRow(
           device: device,
           paired: c.isPaired(device),
-          connected: c.current?.id == device.id && c.isConnected,
-          supported: device.kind == DeviceKind.androidtv,
-          selected: c.current?.id == device.id,
-          onSelect: () => c.select(device),
+          connected: c.isDeviceConnected(device.id),
+          supported: device.kind != DeviceKind.tizen,
+          selected: c.current?.devices.any((d) => d.id == device.id) ?? false,
+          onSelect: () =>
+              c.select(c.targetFor(device.id) ?? Target.forDevice(device)),
           onPair: () => _pair(device),
           onRename: () => _rename(device),
           onRemove: () => _confirmRemove(device),

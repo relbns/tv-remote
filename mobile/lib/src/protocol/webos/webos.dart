@@ -49,12 +49,16 @@ class WebosClient {
 
   final _keys = StreamController<String>.broadcast();
   final _prompts = StreamController<void>.broadcast();
+  final _closedEvents = StreamController<void>.broadcast();
 
   /// Emits the client key once the set issues one — store it.
   Stream<String> get clientKeys => _keys.stream;
 
   /// Emits when the set puts its confirmation prompt on screen.
   Stream<void> get prompts => _prompts.stream;
+
+  /// Fires when the connection ends, so callers can show it and reconnect.
+  Stream<void> get closed => _closedEvents.stream;
 
   bool get isConnected => _socket != null;
 
@@ -234,8 +238,10 @@ class WebosClient {
   }
 
   void _onClosed() {
+    final wasConnected = _socket != null;
     _socket = null;
     _pointer = null;
+    if (wasConnected && !_closedEvents.isClosed) _closedEvents.add(null);
     for (final completer in _pending.values) {
       if (!completer.isCompleted) {
         completer.completeError(const WebosException('החיבור לטלוויזיה נסגר'));
@@ -258,6 +264,7 @@ class WebosClient {
     await close();
     await _keys.close();
     await _prompts.close();
+    await _closedEvents.close();
   }
 }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/controller.dart';
-import '../data/device.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 import 'widgets/dpad.dart';
@@ -29,9 +28,9 @@ class _RemotePageState extends State<RemotePage> {
   @override
   Widget build(BuildContext context) {
     final live = c.isConnected;
-    final device = c.current;
+    final target = c.current;
 
-    if (device == null) {
+    if (target == null) {
       return const _Empty(
         message: 'עדיין לא הוגדר אף מכשיר.',
         hint: 'עבור ללשונית "מכשירים" וחפש ברשת.',
@@ -103,12 +102,19 @@ class _RemotePageState extends State<RemotePage> {
               radius: 28,
               enabled: live,
               onTap: () => c.send('mute'),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 56,
                 height: 56,
+                // The box reports its mute state, so show it rather than a
+                // fixed icon — a control that never reflects reality is worse
+                // than no indicator at all.
                 child: Icon(
-                  Icons.volume_off_rounded,
-                  color: Palette.inkMid,
+                  c.deviceState.muted ?? false
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color: (c.deviceState.muted ?? false)
+                      ? Palette.amber
+                      : Palette.inkMid,
                   size: 20,
                 ),
               ),
@@ -173,7 +179,7 @@ class _RemotePageState extends State<RemotePage> {
             ),
           ],
         ),
-        if (device.kind == DeviceKind.androidtv) ...[
+        if (target.source != null) ...[
           const SizedBox(height: 14),
           const Text(
             'הכפתורים "כיבוי מסך" ו"מקור" מועברים לטלוויזיה בכבל ה־'
@@ -202,7 +208,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final device = controller.current!;
+    final target = controller.current!;
     final (color, label) = switch (controller.link) {
       LinkState.connected => (Palette.live, 'מחובר'),
       LinkState.connecting => (Palette.amber, 'מתחבר…'),
@@ -211,27 +217,49 @@ class _Header extends StatelessWidget {
       LinkState.idle => (Palette.inkDim, 'לא מצומד'),
     };
 
+    // A set shows one lamp per half, so a screen that dropped is visible even
+    // while the box is still answering.
+    final lamps = target.devices
+        .map(
+          (d) => Lamp(
+            color: controller.isDeviceConnected(d.id)
+                ? Palette.live
+                : Palette.dead,
+            tooltip: '${d.name} · ${d.host}',
+          ),
+        )
+        .toList();
+
     return Raised(
       radius: Radii.lg,
+      onTap: controller.targets.length > 1
+          ? () => _showTargetPicker(context, controller)
+          : null,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Row(
         spacing: 12,
         children: [
-          Lamp(color: color),
+          if (lamps.length > 1)
+            Row(mainAxisSize: MainAxisSize.min, spacing: 5, children: lamps)
+          else
+            Lamp(color: color),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  device.name,
+                  target.isRoom ? '${target.name} · סט' : target.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  '${device.kind.short} · ${device.host} · $label',
+                  target.isRoom
+                      ? '${target.source?.name ?? "—"} + ${target.display?.name ?? "—"} · $label'
+                      : '${target.source?.kind.short ?? target.display?.kind.short} · '
+                            '${target.devices.firstOrNull?.host} · $label',
                   style: const TextStyle(fontSize: 11, color: Palette.inkDim),
                 ),
               ],
@@ -242,7 +270,6 @@ class _Header extends StatelessWidget {
               controller.labelFor(controller.deviceState.currentApp!),
               style: const TextStyle(fontSize: 11.5, color: Palette.amber),
             ),
-          // Powering the box itself had no control anywhere in the app.
           _PowerButton(controller: controller),
         ],
       ),
@@ -415,7 +442,7 @@ class _PowerButton extends StatelessWidget {
       onTap: controller.isConnected
           ? () {
               HapticFeedback.mediumImpact();
-              controller.send('power');
+              controller.power();
             }
           : null,
       child: Container(
@@ -438,3 +465,87 @@ class _PowerButton extends StatelessWidget {
     ),
   );
 }
+
+/// Choose which set or device the remote points at.
+Future<void> _showTargetPicker(
+  BuildContext context,
+  RemoteController controller,
+) => showModalBottomSheet<void>(
+  context: context,
+  backgroundColor: Palette.surface,
+  showDragHandle: true,
+  useSafeArea: true,
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+  ),
+  builder: (sheetContext) => SafeArea(
+    top: false,
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Center(
+              child: Text(
+                'במה לשלוט',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          for (final target in controller.targets)
+            Raised(
+              radius: Radii.md,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                controller.select(target);
+              },
+              child: Row(
+                spacing: 10,
+                children: [
+                  Icon(
+                    target.isRoom ? Icons.link_rounded : Icons.tv_rounded,
+                    size: 19,
+                    color: target.id == controller.current?.id
+                        ? Palette.amber
+                        : Palette.inkDim,
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          target.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          target.isRoom
+                              ? '${target.source?.name} + ${target.display?.name}'
+                              : target.devices.firstOrNull?.host ?? '',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Palette.inkDim,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (target.id == controller.current?.id)
+                    const Icon(
+                      Icons.check_rounded,
+                      size: 19,
+                      color: Palette.amber,
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    ),
+  ),
+);

@@ -40,6 +40,12 @@ class SharedData {
   /// Command name to Android `KeyEvent` constant name.
   Map<String, String> get androidKeyNames => _plain(_keys['androidtv']);
 
+  /// Command name to the button the webOS pointer socket expects.
+  Map<String, String> get webosButtons => _plain(_keys['webos']['buttons']);
+
+  /// Command name to the SSAP endpoint that performs it.
+  Map<String, String> get webosRequests => _plain(_keys['webos']['requests']);
+
   /// The starting shortcuts for a box, before any are learned.
   List<AppShortcut> get catalog => [
     for (final entry in _apps['catalog'] as List)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/controller.dart';
 import 'about_sheet.dart';
+import 'rooms_page.dart';
 import 'transfer_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
@@ -92,6 +93,17 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                 ),
               ),
             const SizedBox(height: 8),
+            Pill(
+              label: 'סטים — מסך וממיר יחד',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => RoomsPage(controller: widget.controller),
+                  ),
+                );
+              },
+            ),
             Pill(
               label: 'העברה למכשיר אחר',
               onTap: () {

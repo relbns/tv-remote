@@ -18,10 +18,15 @@ class Backup {
     required this.devices,
     required this.shortcuts,
     required this.defaultTab,
+    this.rooms = const [],
     this.certificates = const {},
   });
 
   final List<Device> devices;
+
+  /// Sets travel with the devices; a set without both halves is dropped on
+  /// import anyway, so nothing needs to be checked here.
+  final List<Room> rooms;
 
   /// Saved app shortcuts, keyed by device id.
   final Map<String, List<AppEntry>> shortcuts;
@@ -35,6 +40,7 @@ class Backup {
   Map<String, dynamic> toJson() => {
     'v': formatVersion,
     'devices': [for (final device in devices) device.toJson()],
+    if (rooms.isNotEmpty) 'rooms': [for (final room in rooms) room.toJson()],
     'apps': {
       for (final entry in shortcuts.entries)
         entry.key: [for (final app in entry.value) app.toJson()],
@@ -59,6 +65,10 @@ class Backup {
       devices: [
         for (final entry in json['devices'] as List? ?? const [])
           Device.fromJson(entry as Map<String, dynamic>),
+      ],
+      rooms: [
+        for (final entry in json['rooms'] as List? ?? const [])
+          Room.fromJson(entry as Map<String, dynamic>),
       ],
       shortcuts: {
         for (final entry in (json['apps'] as Map? ?? const {}).entries)

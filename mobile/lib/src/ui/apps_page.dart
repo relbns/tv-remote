@@ -19,9 +19,9 @@ class AppsPage extends StatelessWidget {
           radius: Radii.lg,
           padding: const EdgeInsets.all(16),
           child: const Text(
-            'הממיר לא יכול לדווח אילו אפליקציות מותקנות עליו — לפרוטוקול של '
-            'Android TV אין בקשה כזו. במקום זה הוא לומד: פתח אפליקציה עם השלט '
-            'הרגיל והיא תופיע כאן לשמירה.',
+            'הרשימה נבנית ממה שבאמת רץ על הממיר. הפרוטוקול אינו יודע למנות '
+            'אפליקציות מותקנות, אבל הוא מדווח מה פועל בכל רגע — אז כל אפליקציה '
+            'שתפתח נוספת לכאן מעצמה.',
             style: TextStyle(
               fontSize: 12.5,
               color: Palette.inkMid,
@@ -29,39 +29,26 @@ class AppsPage extends StatelessWidget {
             ),
           ),
         ),
-        if (controller.learned.isNotEmpty) ...[
+        if (controller.catalogSuggestions().isNotEmpty) ...[
           const SizedBox(height: 20),
-          const _Label('זוהו בממיר'),
-          for (final package in controller.learned) ...[
+          const _Label('הוסף מהקטלוג'),
+          for (final app in controller.catalogSuggestions()) ...[
             Raised(
               radius: Radii.md,
-              onTap: () => controller.saveLearned(package),
+              onTap: () => controller.addShortcut(app),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 spacing: 12,
                 children: [
-                  const Lamp(color: Palette.amber),
+                  _Tile(label: app.label, color: app.color),
                   Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          controller.labelFor(package),
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          package,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Palette.inkDim,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      app.label,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
                   const Text(
-                    'שמור',
+                    'הוסף',
                     style: TextStyle(color: Palette.amber, fontSize: 13),
                   ),
                 ],
@@ -135,4 +122,38 @@ class _Label extends StatelessWidget {
       style: const TextStyle(fontSize: 12, color: Palette.inkDim),
     ),
   );
+}
+
+/// A brand-coloured tile carrying the app's initial.
+///
+/// The logos themselves are trademarks and are not bundled; a tile in the
+/// brand's colour is recognisable without redistributing anyone's mark.
+class _Tile extends StatelessWidget {
+  const _Tile({required this.label, this.color});
+  final String label;
+  final String? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = color == null
+        ? Palette.surfaceHigh
+        : Color(int.parse(color!.replaceFirst('#', 'ff'), radix: 16));
+    return Container(
+      width: 38,
+      height: 38,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: value,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label.characters.first.toUpperCase(),
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          color: color == null ? Palette.inkMid : const Color(0xFF0B0E14),
+        ),
+      ),
+    );
+  }
 }

@@ -60,6 +60,42 @@ class Device {
       '${kind.name}-${host.replaceAll('.', '-')}';
 }
 
+/// A screen and a source treated as one remote.
+///
+/// Commands are routed to whichever half should handle them: navigation to the
+/// box, volume and input to the screen, power to both.
+class Room {
+  const Room({
+    required this.id,
+    required this.name,
+    required this.displayId,
+    required this.sourceId,
+  });
+
+  final String id;
+  final String name;
+
+  /// The television.
+  final String displayId;
+
+  /// The box producing the picture.
+  final String sourceId;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'displayId': displayId,
+    'sourceId': sourceId,
+  };
+
+  factory Room.fromJson(Map<String, dynamic> json) => Room(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    displayId: json['displayId'] as String,
+    sourceId: json['sourceId'] as String,
+  );
+}
+
 /// Persistence.
 ///
 /// Devices and shortcuts are ordinary preferences, but the pairing certificate
@@ -105,7 +141,12 @@ class DeviceStore {
 
   Future<void> remove(String id) async {
     await saveDevices(devices().where((d) => d.id != id).toList());
+    // A set missing half of itself is not a set.
+    await saveRooms(
+      rooms().where((r) => r.displayId != id && r.sourceId != id).toList(),
+    );
     await _secure.delete(key: 'cert.$id');
+    await _secure.delete(key: 'webos.$id');
     await _prefs.remove('$_appsPrefix$id');
   }
 
@@ -119,6 +160,52 @@ class DeviceStore {
 
   Future<void> saveCertificate(String deviceId, ClientCertificate cert) =>
       _secure.write(key: 'cert.$deviceId', value: jsonEncode(cert.toJson()));
+
+  /// webOS issues a client key instead of a certificate. Same role, same place:
+  /// it is what proves this phone to that television.
+  Future<String?> webosKey(String deviceId) =>
+      _secure.read(key: 'webos.$deviceId');
+
+  Future<void> saveWebosKey(String deviceId, String key) =>
+      _secure.write(key: 'webos.$deviceId', value: key);
+
+  /// Whatever credential this device's protocol uses.
+  Future<bool> hasCredential(Device device) async =>
+      device.kind == DeviceKind.androidtv
+      ? await certificate(device.id) != null
+      : await webosKey(device.id) != null;
+
+  /* ---------------- rooms ---------------- */
+
+  static const _roomsKey = 'rooms';
+
+  List<Room> rooms() {
+    final raw = _prefs.getString(_roomsKey);
+    if (raw == null) return const [];
+    return [
+      for (final entry in jsonDecode(raw) as List)
+        Room.fromJson(entry as Map<String, dynamic>),
+    ];
+  }
+
+  Future<void> saveRooms(List<Room> rooms) => _prefs.setString(
+    _roomsKey,
+    jsonEncode([for (final room in rooms) room.toJson()]),
+  );
+
+  Future<void> upsertRoom(Room room) async {
+    final all = rooms().toList();
+    final index = all.indexWhere((r) => r.id == room.id);
+    if (index == -1) {
+      all.add(room);
+    } else {
+      all[index] = room;
+    }
+    await saveRooms(all);
+  }
+
+  Future<void> removeRoom(String id) async =>
+      saveRooms(rooms().where((r) => r.id != id).toList());
 
   /* ---------------- preferences ---------------- */
 
