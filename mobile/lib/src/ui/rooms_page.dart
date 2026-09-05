@@ -51,8 +51,9 @@ class _RoomsPageState extends State<RoomsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'סט מחבר מסך וממיר לשלט אחד. הניווט והמדיה הולכים לממיר, '
-                  'העוצמה ובחירת המקור למסך, וכפתור ההפעלה מכבה ומדליק את שניהם.',
+                  'סט מקשר בין מסך לממיר שמחובר אליו בכבל, כדי לשלוט בשניהם '
+                  'כיחידה אחת. הניווט והמדיה הולכים לממיר, העוצמה ובחירת המקור '
+                  'למסך, וכפתור ההפעלה מכבה ומדליק את שניהם.',
                   style: TextStyle(
                     fontSize: 12.5,
                     height: 1.65,
