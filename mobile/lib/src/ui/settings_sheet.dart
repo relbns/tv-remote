@@ -98,10 +98,13 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               textAlign: TextAlign.start,
               style: TextStyle(fontSize: 12, color: Palette.inkDim),
             ),
-            const Text(
-              'למי הפקודות האלה נשלחות. אם העוצמה לא נשמעת, נסה להחליף',
+            Text(
+              widget.controller.current?.isRoom ?? false
+                  ? 'למי הפקודות נשלחות בסט "${widget.controller.current!.name}". '
+                        'לכל סט הגדרה משלו'
+                  : 'למי הפקודות נשלחות. אם העוצמה לא נשמעת, נסה להחליף',
               textAlign: TextAlign.start,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: Palette.inkDim,
                 height: 1.5,
@@ -119,7 +122,9 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   vertical: 14,
                 ),
                 onTap: () async {
-                  await widget.controller.setRouting(option.$1);
+                  final target = widget.controller.current;
+                  if (target == null) return;
+                  await widget.controller.setRouting(target, option.$1);
                   if (mounted) setState(() {});
                 },
                 child: Row(
@@ -140,7 +145,11 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                         ],
                       ),
                     ),
-                    if (widget.controller.routing == option.$1)
+                    if (widget.controller.current != null &&
+                        widget.controller.routingFor(
+                              widget.controller.current!,
+                            ) ==
+                            option.$1)
                       const Icon(
                         Icons.check_rounded,
                         size: 19,

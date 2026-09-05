@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/controller.dart';
+import '../protocol/androidtv/remote.dart';
 import '../data/updates.dart';
+import 'rooms_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 import 'widgets/dpad.dart';
@@ -97,14 +99,17 @@ class _RemotePageState extends State<RemotePage> {
           children: [
             Rocker(
               label: 'עוצמה',
+              // Showing what the device actually reports separates "the command
+              // never arrived" from "this device has no volume to give".
+              value: _volumeReading(c.deviceState),
               enabled: live,
-              onDown: () => c.send('voldown'),
-              onUp: () => c.send('volup'),
+              onDown: () => _volume(context, c, 'voldown'),
+              onUp: () => _volume(context, c, 'volup'),
             ),
             Raised(
               radius: 28,
               enabled: live,
-              onTap: () => c.send('mute'),
+              onTap: () => _volume(context, c, 'mute'),
               child: SizedBox(
                 width: 56,
                 height: 56,
@@ -608,6 +613,45 @@ class _UpdateBanner extends StatelessWidget {
           child: const Text('עדכן', style: TextStyle(color: Palette.amber)),
         ),
       ],
+    ),
+  );
+}
+
+/// What the device says its volume is. A box that passes HDMI audio through
+/// untouched reports a maximum of zero — worth showing, because it explains why
+/// the volume keys are silent without leaving the user guessing.
+String? _volumeReading(RemoteState state) {
+  final max = state.volumeMax;
+  final level = state.volumeLevel;
+  if (max == null || level == null) return null;
+  if (max == 0) return 'אין';
+  return '$level';
+}
+
+/// A box that reports no volume scale swallows volume keys silently. Send the
+/// command anyway — some devices act on it without reporting — but say once
+/// what is going on, because silence here reads as a broken app.
+void _volume(BuildContext context, RemoteController c, String command) {
+  c.send(command);
+  if (c.deviceState.volumeMax != 0 || c.current?.display != null) return;
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  messenger?.clearSnackBars();
+  messenger?.showSnackBar(
+    SnackBar(
+      content: const Text(
+        'הממיר מדווח שאין לו סקאלת עוצמה (0 מתוך 0), ולכן הוא מתעלם ממקשי '
+        'העוצמה. בהגדרות הממיר: תצוגה וקול ← פלט שמע ← PCM/סטריאו במקום '
+        'Passthrough. אחרת צרף את הטלוויזיה לסט ושלוט בעוצמה דרכה.',
+      ),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(14),
+      duration: const Duration(seconds: 6),
+      action: SnackBarAction(
+        label: 'לסטים',
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => RoomsPage(controller: c)),
+        ),
+      ),
     ),
   );
 }

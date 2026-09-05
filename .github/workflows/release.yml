@@ -1,0 +1,117 @@
+name: שחרור
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: tool/sync_shared.sh
+        working-directory: mobile
+      - run: flutter pub get
+        working-directory: mobile
+
+      # The keystore lives only in repository secrets; it is written to disk for
+      # the build and the runner is discarded afterwards.
+      - name: שחזור מפתח החתימה
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::חסר הסוד ANDROID_KEYSTORE_BASE64 — ראה docs/SIGNING.md"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > mobile/android/upload.jks
+          cat > mobile/android/key.properties <<EOF
+          storeFile=upload.jks
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          EOF
+
+      # arm64 covers every phone from 2016 on and is a third of the size; the
+      # universal build stays available for anything older.
+      - run: flutter build apk --release --target-platform android-arm64
+        working-directory: mobile
+      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk tv-remote-arm64.apk
+
+      - run: flutter build apk --release
+        working-directory: mobile
+      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk tv-remote-universal.apk
+
+      - name: אימות שה-APK יכול להתחבר לרשת
+        run: mobile/tool/check_apk.sh tv-remote-arm64.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: tv-remote-*.apk
+
+  desktop:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - run: npm ci
+        working-directory: desktop
+      - run: npm run check
+        working-directory: desktop
+      # No Apple Developer account, so the DMG ships unsigned and unnotarised.
+      - run: npm run dist
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop
+          path: desktop/dist/*.dmg
+
+  release:
+    needs: [android, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: שם קובץ ה-DMG לפי הגרסה
+        run: |
+          mkdir -p out
+          cp artifacts/android/*.apk out/
+          for f in artifacts/desktop/*.dmg; do cp "$f" "out/tv-remote-mac.dmg"; done
+          ls -la out
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
+          body: |
+            ## אנדרואיד
+
+            הורד את **tv-remote-arm64.apk** ופתח אותו. יופיע אישור חד־פעמי
+            להתקנה ממקור לא מוכר — זה תקין לאפליקציה שאינה מגיעה מחנות.
+            `tv-remote-universal.apk` גדול פי שלושה ונחוץ רק למכשיר ישן במיוחד.
+
+            ## macOS
+
+            הורד את **tv-remote-mac.dmg** וגרור לתיקיית האפליקציות. הקובץ אינו
+            חתום בתעודת Apple, ולכן בפתיחה הראשונה לחיצה ימנית ← **Open** ←
+            **Open** שוב, פעם אחת בלבד.

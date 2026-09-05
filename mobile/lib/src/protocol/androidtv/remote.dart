@@ -8,12 +8,26 @@ import 'framing.dart';
 
 /// State the box reports about itself while a session is open.
 class RemoteState {
-  const RemoteState({this.powered, this.volume, this.muted, this.currentApp});
+  const RemoteState({
+    this.powered,
+    this.volume,
+    this.volumeLevel,
+    this.volumeMax,
+    this.muted,
+    this.currentApp,
+  });
 
   final bool? powered;
 
   /// 0..1, or null when the box has not reported a level yet.
   final double? volume;
+
+  /// The raw pair the box reports. A box that passes HDMI audio through at a
+  /// fixed level reports a max of 0, which is worth showing rather than hiding:
+  /// it is the difference between "the command was lost" and "there is nothing
+  /// here to turn up".
+  final int? volumeLevel;
+  final int? volumeMax;
   final bool? muted;
 
   /// Foreground package name, e.g. `com.netflix.ninja`.
@@ -22,11 +36,15 @@ class RemoteState {
   RemoteState copyWith({
     bool? powered,
     double? volume,
+    int? volumeLevel,
+    int? volumeMax,
     bool? muted,
     String? currentApp,
   }) => RemoteState(
     powered: powered ?? this.powered,
     volume: volume ?? this.volume,
+    volumeLevel: volumeLevel ?? this.volumeLevel,
+    volumeMax: volumeMax ?? this.volumeMax,
     muted: muted ?? this.muted,
     currentApp: currentApp ?? this.currentApp,
   );
@@ -248,6 +266,8 @@ class AndroidTvRemote {
       final level = message.remoteSetVolumeLevel;
       _emit(
         _state.copyWith(
+          volumeLevel: level.volumeLevel,
+          volumeMax: level.volumeMax,
           volume: level.volumeMax > 0
               ? level.volumeLevel / level.volumeMax
               : null,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,10 +59,14 @@ class Rocker extends StatelessWidget {
     required this.label,
     required this.onDown,
     required this.onUp,
+    this.value,
     this.enabled = true,
   });
 
   final String label;
+
+  /// Shown under the label when the device reports a reading.
+  final String? value;
   final VoidCallback onDown;
   final VoidCallback onUp;
   final bool enabled;
@@ -78,15 +84,37 @@ class Rocker extends StatelessWidget {
             children: [
               _Step('−', enabled ? onDown : null, 'הפחת $label'),
               Expanded(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  // The two step buttons take most of the width; without this
-                  // the label wraps to a second line and the rocker grows.
-                  softWrap: false,
-                  overflow: TextOverflow.visible,
-                  style: const TextStyle(fontSize: 10.5, color: Palette.inkDim),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      // The two step buttons take most of the width; without
+                      // this the label wraps and the rocker grows.
+                      softWrap: false,
+                      overflow: TextOverflow.visible,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Palette.inkDim,
+                      ),
+                    ),
+                    if (value != null)
+                      Text(
+                        value!,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                          color: Palette.ink,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               _Step('+', enabled ? onUp : null, 'הגבר $label'),
@@ -108,21 +136,23 @@ class _Step extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: semantics,
-    child: InkResponse(
-      radius: 28,
-      onTap: onTap == null
-          ? null
-          : () {
-              HapticFeedback.selectionClick();
-              onTap!();
-            },
-      child: SizedBox(
-        width: 42,
-        height: 56,
-        child: Center(
-          child: Text(
-            glyph,
-            style: const TextStyle(fontSize: 22, color: Palette.inkMid),
+    child: RepeatDetector(
+      enabled: onTap != null,
+      onFire: () {
+        HapticFeedback.selectionClick();
+        onTap?.call();
+      },
+      child: InkResponse(
+        radius: 28,
+        onTap: onTap == null ? null : () {},
+        child: SizedBox(
+          width: 42,
+          height: 56,
+          child: Center(
+            child: Text(
+              glyph,
+              style: const TextStyle(fontSize: 22, color: Palette.inkMid),
+            ),
           ),
         ),
       ),
@@ -220,5 +250,68 @@ class IconKey extends StatelessWidget {
         ),
       ),
     ),
+  );
+}
+
+/// Fires once on tap, then repeats while held.
+///
+/// Stepping through twenty volume levels or a long menu one press at a time is
+/// what makes a phone feel worse than the plastic remote it replaces. The first
+/// repeat waits, so a normal tap is never mistaken for a hold.
+class RepeatDetector extends StatefulWidget {
+  const RepeatDetector({
+    super.key,
+    required this.onFire,
+    required this.child,
+    this.enabled = true,
+    this.delay = const Duration(milliseconds: 450),
+    this.interval = const Duration(milliseconds: 110),
+  });
+
+  final VoidCallback onFire;
+  final Widget child;
+  final bool enabled;
+
+  /// How long to hold before repeating begins.
+  final Duration delay;
+
+  /// Gap between repeats once they start.
+  final Duration interval;
+
+  @override
+  State<RepeatDetector> createState() => _RepeatDetectorState();
+}
+
+class _RepeatDetectorState extends State<RepeatDetector> {
+  Timer? _delayTimer;
+  Timer? _repeatTimer;
+
+  @override
+  void dispose() {
+    _stop();
+    super.dispose();
+  }
+
+  void _start() {
+    if (!widget.enabled) return;
+    widget.onFire();
+    _delayTimer = Timer(widget.delay, () {
+      _repeatTimer = Timer.periodic(widget.interval, (_) => widget.onFire());
+    });
+  }
+
+  void _stop() {
+    _delayTimer?.cancel();
+    _repeatTimer?.cancel();
+    _delayTimer = null;
+    _repeatTimer = null;
+  }
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: (_) => _start(),
+    onPointerUp: (_) => _stop(),
+    onPointerCancel: (_) => _stop(),
+    child: widget.child,
   );
 }

@@ -95,6 +95,8 @@ class RemoteController extends ChangeNotifier {
     return RemoteState(
       powered: display?.powered ?? source?.powered,
       volume: display?.volume ?? source?.volume,
+      volumeLevel: display?.volumeLevel ?? source?.volumeLevel,
+      volumeMax: display?.volumeMax ?? source?.volumeMax,
       muted: display?.muted ?? source?.muted,
       currentApp: source?.currentApp ?? display?.currentApp,
     );
@@ -276,7 +278,7 @@ class RemoteController extends ChangeNotifier {
     // 'auto' follows the shared routing table; an explicit choice overrides it
     // for the commands where the two halves disagree about who should act.
     final routable = _shared.preferDisplay.contains(command);
-    final preferDisplay = switch (routing) {
+    final preferDisplay = switch (routingFor(target)) {
       'display' => routable,
       'source' => false,
       _ => routable,
@@ -310,7 +312,7 @@ class RemoteController extends ChangeNotifier {
     if (target == null) return;
 
     // With an explicit choice, power only touches the half that was chosen.
-    final chosen = switch (routing) {
+    final chosen = switch (routingFor(target)) {
       'display' => [?target.display],
       'source' => [?target.source],
       _ => target.devices,
@@ -573,11 +575,21 @@ class RemoteController extends ChangeNotifier {
 
   int get defaultTab => _store.defaultTab;
 
-  /// 'auto' | 'display' | 'source'
-  String get routing => _store.routing;
+  /// Where this target's volume, power and input go.
+  ///
+  /// A set carries its own choice; a single device follows the app-wide one,
+  /// since there is no second half to disagree with.
+  String routingFor(Target target) => target.room?.routing ?? _store.routing;
 
-  Future<void> setRouting(String value) async {
-    await _store.setRouting(value);
+  Future<void> setRouting(Target target, String value) async {
+    final room = target.room;
+    if (room == null) {
+      await _store.setRouting(value);
+    } else {
+      await _store.upsertRoom(room.copyWith(routing: value));
+      rooms = _store.rooms();
+      _reselect();
+    }
     notifyListeners();
   }
 

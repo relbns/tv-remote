@@ -64,7 +64,7 @@
         <div class="row sliders">
           <div class="stepper" role="group" aria-label="עוצמת שמע">
             <button data-cmd="voldown" aria-label="הנמכת עוצמה">−</button>
-            <span class="stepper-label">עוצמה</span>
+            <span class="stepper-label">עוצמה<b id="vol-read" hidden></b></span>
             <button data-cmd="volup" aria-label="הגברת עוצמה">+</button>
           </div>
           <button class="round" data-cmd="mute" id="mute-btn" title="השתקה">🔇</button>
@@ -153,6 +153,18 @@
           <button class="link-btn" data-help="sets">איך הניתוב עובד? →</button>
         </div>
 
+        <div class="section-head"><span>אפליקציה</span></div>
+        <label class="row toggle-row">
+          <input type="checkbox" id="open-at-login" />
+          <span class="toggle-body">
+            <b>הפעלה עם הכניסה למחשב</b>
+            <small>השלט יחכה בשורת התפריטים, בלי לפתוח חלון</small>
+          </span>
+        </label>
+        <div class="row">
+          <button class="pill ghost" id="about-btn">אודות</button>
+        </div>
+
         <div class="section-head"><span>מכשירים</span></div>
         <div class="device-list" id="device-list"></div>
         <div class="row scan-row">
@@ -193,8 +205,25 @@
             <tr><td>הפעלה / כיבוי</td><td>שניהם יחד</td></tr>
           </table>
           <p>אם המכשיר המועדף לא זמין או לא תומך בפקודה, היא נשלחת אוטומטית לשני.
-          כך עוצמת השמע ממשיכה לעבוד גם בטלוויזיה בלי חיבור רשת — הממיר מעביר
-          אותה בכבל ה-HDMI.</p>
+          את הניתוב אפשר לקבוע לכל סט בנפרד, כי מה שעובד בסלון לא בהכרח עובד
+          בחדר השינה.</p>
+        </details>
+
+        <details class="help" id="help-volume">
+          <summary>העוצמה לא משתנה</summary>
+          <p>ליד הכפתורים מוצג מה המכשיר עצמו מדווח. אם כתוב שם <b>אין</b>, הממיר
+          מדווח סקאלת עוצמה של 0 מתוך 0 — כלומר אין לו עוצמה משלו, והוא מתעלם
+          ממקשי העוצמה. הפקודה נשלחת ומגיעה; פשוט אין למה להחיל אותה.</p>
+          <p>זו גם הסיבה שכפתור ההשתקה לא מתחלף: הממיר לא מדווח על מצב השתקה,
+          והכפתור מראה את האמת ולא ניחוש.</p>
+          <p>שתי דרכים לתקן:</p>
+          <ol>
+            <li>בהגדרות הממיר — <b>תצוגה וקול ← פלט שמע</b> — לבחור
+            <b>PCM / סטריאו</b> במקום Passthrough. ב-Passthrough השמע יוצא
+            ב-HDMI בעוצמה קבועה והממיר מכבה את בקרת העוצמה שלו.</li>
+            <li>לצרף את הטלוויזיה עצמה לסט, ולתת לה את העוצמה. זו הדרך היציבה,
+            והיא גם נותנת עוצמה אמיתית ולא מדורגת דרך הממיר.</li>
+          </ol>
         </details>
 
         <details class="help" id="help-apps">

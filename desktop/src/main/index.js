@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Tray, Menu, ipcMain, globalShortcut, nativeImage, shell } from "electron"
+import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import { hub } from "./hub.js"
@@ -96,6 +97,8 @@ function createTray() {
         { label: "חבר מחדש את כל המכשירים", click: () => hub.connectAll() },
         { label: "פתח תיקיית הגדרות", click: () => shell.showItemInFolder(store.storePath()) },
         { type: "separator" },
+        { label: "אודות", click: () => app.showAboutPanel() },
+        { type: "separator" },
         { label: "יציאה", role: "quit" },
       ]),
     )
@@ -138,15 +141,59 @@ function registerIpc() {
   handle("settings:get", () => store.getSettings())
   handle("settings:set", (k, v) => store.setSetting(k, v))
   handle("window:hide", () => hideWindow())
+  handle("app:about", () => app.showAboutPanel())
+  handle("app:openAtLogin", () => opensAtLogin())
+  handle("app:setOpenAtLogin", (enabled) => {
+    setOpenAtLogin(Boolean(enabled))
+    return opensAtLogin()
+  })
 
   hub.on("devices", (devices) => win?.webContents.send("devices:changed", devices))
   hub.on("device-error", (e) => win?.webContents.send("device:error", e))
+}
+
+/** Native About panel, so version and licence live where macOS expects them. */
+function configureAbout() {
+  const { version } = JSON.parse(
+    readFileSync(join(ROOT, "package.json"), "utf8"),
+  )
+  app.setAboutPanelOptions({
+    applicationName: "שלט טלוויזיה",
+    applicationVersion: version,
+    version: "",
+    credits: "relbns · MIT",
+    copyright:
+      "הפרוטוקול של Android TV Remote v2 אינו מתועד רשמית; הסכמות שבשימוש " +
+      "פוענחו על ידי louis49/androidtv-remote.",
+  })
+}
+
+/** Whether the app is really registered to start when the user logs in.
+ *
+ * `openAtLogin` can report true for an app that is not actually registered —
+ * an unsigned build run from outside /Applications, for instance. The field
+ * that reflects reality is `executableWillLaunchAtLogin`, so it wins when
+ * macOS provides it.
+ */
+function opensAtLogin() {
+  const settings = app.getLoginItemSettings()
+  return settings.executableWillLaunchAtLogin ?? settings.openAtLogin
+}
+
+function setOpenAtLogin(enabled) {
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    // A remote that reopens its window on every login would be in the way; it
+    // belongs in the menu bar, waiting.
+    openAsHidden: true,
+  })
 }
 
 app.whenReady().then(() => {
   // A menubar utility has no business owning a Dock tile.
   app.dock?.hide()
 
+  configureAbout()
   createWindow()
   createTray()
   registerIpc()

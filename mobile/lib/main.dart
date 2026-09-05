@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'src/data/controller.dart';
 import 'src/data/device.dart';
@@ -66,13 +69,59 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   late int _tab = widget.controller.defaultTab;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Pressing a button every few seconds does not count as activity, so the
+    // screen locks mid-use and the remote has to be unlocked again.
+    unawaited(WakelockPlus.enable());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    unawaited(
+      state == AppLifecycleState.resumed
+          ? WakelockPlus.enable()
+          : WakelockPlus.disable(),
+    );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(WakelockPlus.disable());
+    super.dispose();
+  }
+
+  /// Errors were being recorded and never shown, so a command that could not
+  /// be delivered looked exactly like one that was.
+  void _showErrors() {
+    final message = widget.controller.error;
+    if (message == null || message == _lastError) return;
+    _lastError = message;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.clearSnackBars();
+    messenger?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(14),
+        duration: const Duration(seconds: 6),
+      ),
+    );
+  }
+
+  String? _lastError;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: widget.controller,
     builder: (context, _) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showErrors());
       return Scaffold(
         // IndexedStack keeps every tab alive. Swapping widgets instead would
         // throw away each page's state on every switch — which is what made

@@ -56,6 +56,16 @@ ThemeData buildTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: Palette.ground,
+    // Messages carry real explanations, so they need to be as readable as the
+    // rest of the app rather than a bright slab dropped on a dark screen.
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: Palette.surfaceHigh,
+      contentTextStyle: const TextStyle(color: Palette.ink, height: 1.45),
+      actionTextColor: Palette.amber,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 8,
+    ),
     fontFamily: 'Rubik',
     splashFactory: NoSplash.splashFactory,
     textTheme: const TextTheme(

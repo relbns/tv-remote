@@ -26,7 +26,9 @@ export class AndroidTvDriver extends EventEmitter {
     this.remote = null
     this.retry = null
     this.stopped = false
-    this.status = { connected: false, powered: null, volume: null, muted: null, currentApp: null }
+    // volumeMax is kept because a box that passes HDMI audio through reports a
+    // maximum of 0 — the difference between "lost the command" and "nothing to turn up".
+    this.status = { connected: false, powered: null, volume: null, volumeLevel: null, volumeMax: null, muted: null, currentApp: null }
   }
 
   get capabilities() {
@@ -61,7 +63,12 @@ export class AndroidTvDriver extends EventEmitter {
     })
     remote.on("powered", (powered) => this.#update({ powered }))
     remote.on("volume", (v) =>
-      this.#update({ volume: v.maximum ? v.level / v.maximum : null, muted: v.muted }),
+      this.#update({
+        volume: v.maximum ? v.level / v.maximum : null,
+        volumeLevel: v.level,
+        volumeMax: v.maximum,
+        muted: v.muted,
+      }),
     )
     remote.on("current_app", (currentApp) => this.#update({ currentApp }))
     remote.on("unpaired", () => {

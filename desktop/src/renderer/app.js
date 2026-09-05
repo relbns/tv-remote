@@ -14,7 +14,7 @@ const el = {
   select: $("#target-select"), dots: $("#status-dots"), toast: $("#toast"),
   pairTitle: $("#pair-title"), pairHelp: $("#pair-help"), pinRow: $("#pair-pin-row"), pin: $("#pin-input"),
   apps: $("#apps-row"), appsEmpty: $("#apps-empty"), text: $("#text-input"),
-  hint: $("#hint"), routing: $("#routing-note"), mute: $("#mute-btn"),
+  hint: $("#hint"), routing: $("#routing-note"), mute: $("#mute-btn"), volRead: $("#vol-read"),
   roomList: $("#room-list"), deviceList: $("#device-list"), foundList: $("#found-list"),
   roomDisplay: $("#room-display"), roomSource: $("#room-source"), roomName: $("#room-name"),
   savedApps: $("#saved-apps"), suggestList: $("#suggest-list"), suggestBlock: $("#suggest-block"),
@@ -113,6 +113,12 @@ function renderRemote() {
   const connected = Boolean(t?.status.connected)
 
   el.mute.textContent = t?.status.muted ? "🔈" : "🔇"
+
+  // Show what the device reports. A maximum of 0 means the volume keys have
+  // nothing to act on, which is worth saying rather than leaving to guesswork.
+  const max = t?.status.volumeMax
+  el.volRead.hidden = max === null || max === undefined
+  el.volRead.textContent = max === 0 ? "אין" : String(t?.status.volumeLevel ?? "")
 
   for (const button of $$("#remote-view [data-cmd]")) {
     const supported = !t || !caps.size || caps.has(button.dataset.cmd)
@@ -382,6 +388,15 @@ el.text.onkeydown = (e) => {
 }
 
 $("#settings-btn").onclick = () => showView("settings-view")
+
+$("#about-btn").onclick = () => window.tv.about()
+
+// Reflect the real login-item state rather than a remembered one: the user can
+// change it in System Settings and the checkbox must not disagree.
+const loginToggle = $("#open-at-login")
+loginToggle.onchange = async () => {
+  loginToggle.checked = await guard(window.tv.setOpenAtLogin(loginToggle.checked))
+}
 $("#help-btn").onclick = () => showView("help-view")
 $("#manage-apps").onclick = () => showView("apps-view")
 
@@ -477,6 +492,7 @@ window.tv.onShown(() => {
 
 async function init() {
   const settings = await window.tv.getSettings()
+  loginToggle.checked = await window.tv.openAtLogin().catch(() => false)
   snapshot = await window.tv.list()
   currentId = settings.lastTargetId ?? snapshot.targets[0]?.id ?? null
   render()

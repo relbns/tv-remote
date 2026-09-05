@@ -393,3 +393,17 @@ select {
 .device-row .name,
 .apps .pill,
 #target-select { unicode-bidi: plaintext; }
+
+/* ---------- toggle row ---------- */
+.toggle-row {
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+  border-radius: 9px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.toggle-row input { margin-top: 2px; flex: none; accent-color: var(--accent); }
+.toggle-body { display: flex; flex-direction: column; gap: 2px; }
+.toggle-body b { font-size: 12px; font-weight: 600; }
+.toggle-body small { font-size: 10.5px; color: var(--muted); line-height: 1.5; }

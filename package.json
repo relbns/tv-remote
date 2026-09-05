@@ -1,0 +1,11 @@
+{
+  "name": "tv-remote",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "שלט לממירי Android TV ולטלוויזיות חכמות — macOS ואנדרואיד",
+  "scripts": {
+    "version:set": "node tools/version.js",
+    "version:show": "node tools/version.js --show"
+  }
+}

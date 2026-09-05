@@ -70,6 +70,7 @@ class Room {
     required this.name,
     required this.displayId,
     required this.sourceId,
+    this.routing = 'auto',
   });
 
   final String id;
@@ -81,11 +82,26 @@ class Room {
   /// The box producing the picture.
   final String sourceId;
 
+  /// Where volume, power and input go: 'auto', 'display' or 'source'.
+  ///
+  /// Per set rather than global — one room's box relays volume to its screen
+  /// and another's does not, and no single answer fits both.
+  final String routing;
+
+  Room copyWith({String? name, String? routing}) => Room(
+    id: id,
+    name: name ?? this.name,
+    displayId: displayId,
+    sourceId: sourceId,
+    routing: routing ?? this.routing,
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'displayId': displayId,
     'sourceId': sourceId,
+    'routing': routing,
   };
 
   factory Room.fromJson(Map<String, dynamic> json) => Room(
@@ -93,6 +109,7 @@ class Room {
     name: json['name'] as String,
     displayId: json['displayId'] as String,
     sourceId: json['sourceId'] as String,
+    routing: json['routing'] as String? ?? 'auto',
   );
 }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
+import 'controls.dart';
 
 /// The navigation ring.
 ///
@@ -115,12 +116,16 @@ class _Arrow extends StatelessWidget {
     child: Semantics(
       button: true,
       label: label,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 34,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Icon(icon, size: 30, color: Palette.inkMid),
+      // Holding an arrow walks a long menu, the way a physical remote does.
+      child: RepeatDetector(
+        onFire: onTap,
+        child: InkResponse(
+          onTap: () {},
+          radius: 34,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Icon(icon, size: 30, color: Palette.inkMid),
+          ),
         ),
       ),
     ),
