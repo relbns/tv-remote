@@ -1,6 +1,12 @@
 {
   "name": "tv-remote",
   "version": "1.0.0",
+  "license": "MIT",
+  "homepage": "https://tvremote.benesh.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/relbns/tv-remote"
+  },
   "private": true,
   "description": "שלט למחשב לממירי Android TV ולטלוויזיות LG webOS / Samsung Tizen",
   "main": "src/main/index.js",

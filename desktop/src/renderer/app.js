@@ -20,7 +20,7 @@ const el = {
   savedApps: $("#saved-apps"), suggestList: $("#suggest-list"), suggestBlock: $("#suggest-block"),
 }
 
-const VIEWS = ["remote-view", "pair-view", "apps-view", "settings-view", "help-view"]
+const VIEWS = ["remote-view", "pair-view", "apps-view", "settings-view", "help-view", "about-view"]
 
 let snapshot = { targets: [], devices: [], rooms: [] }
 let currentId = null
@@ -391,7 +391,22 @@ el.text.onkeydown = (e) => {
 
 $("#settings-btn").onclick = () => showView("settings-view")
 
-$("#about-btn").onclick = () => window.tv.about()
+$("#about-btn").onclick = () => showView("about-view")
+
+// Everything identifying the app comes from the manifest, so the version on
+// screen is the version that was built — there is nothing here to keep in sync.
+window.tv.info().then((info) => {
+  const repo = (info.repository || "").replace(/\.git$/, "")
+  $("#about-version").textContent = `גרסה ${info.version}`
+  $("#about-license").textContent = info.license
+  $("#about-electron").textContent = `Electron ${info.electron}`
+  $("#link-repo").href = repo
+  $("#link-releases").href = `${repo}/releases`
+  $("#link-issues").href = `${repo}/issues`
+  $("#link-site").href = info.homepage
+})
+
+window.tv.onNavigate((view) => showView(`${view}-view`))
 
 // Reflect the real login-item state rather than a remembered one: the user can
 // change it in System Settings and the checkbox must not disagree.

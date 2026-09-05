@@ -53,7 +53,23 @@ if (updated === pubspec) {
 }
 writeFileSync(pubspecPath, updated)
 
+// --- README ---
+// The number is stated in prose where people actually look, and rewritten here
+// so it cannot quietly fall behind the manifests it is meant to describe.
+const readmePath = join(root, "README.md")
+const readme = readFileSync(readmePath, "utf8")
+const marked = readme.replace(
+  /(<!-- version -->)[\s\S]*?(<!-- \/version -->)/,
+  `$1**${arg}**$2`,
+)
+if (marked === readme) {
+  console.error("לא נמצאו סימני <!-- version --> ב-README.md")
+  process.exit(1)
+}
+writeFileSync(readmePath, marked)
+
 console.log(`גרסה ${arg} נכתבה ל:`)
 console.log("  package.json")
 console.log("  desktop/package.json")
 console.log(`  mobile/pubspec.yaml  (versionCode ${buildNumber})`)
+console.log("  README.md")

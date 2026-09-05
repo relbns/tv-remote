@@ -56,6 +56,14 @@ function createWindow() {
     return { action: "deny" }
   })
 
+  // A link without target=_blank would navigate the popover away from the app
+  // with no way back, so treat any navigation off the local page the same way.
+  win.webContents.on("will-navigate", (event, url) => {
+    if (url.startsWith("file://")) return
+    event.preventDefault()
+    shell.openExternal(url)
+  })
+
   return win
 }
 
@@ -97,7 +105,13 @@ function createTray() {
         { label: "חבר מחדש את כל המכשירים", click: () => hub.connectAll() },
         { label: "פתח תיקיית הגדרות", click: () => shell.showItemInFolder(store.storePath()) },
         { type: "separator" },
-        { label: "אודות", click: () => app.showAboutPanel() },
+        {
+          label: "אודות",
+          click: () => {
+            showWindow()
+            win.webContents.send("window:navigate", "about")
+          },
+        },
         { type: "separator" },
         { label: "יציאה", role: "quit" },
       ]),
@@ -141,7 +155,7 @@ function registerIpc() {
   handle("settings:get", () => store.getSettings())
   handle("settings:set", (k, v) => store.setSetting(k, v))
   handle("window:hide", () => hideWindow())
-  handle("app:about", () => app.showAboutPanel())
+  handle("app:info", () => appInfo())
   handle("app:openAtLogin", () => opensAtLogin())
   handle("app:setOpenAtLogin", (enabled) => {
     setOpenAtLogin(Boolean(enabled))
@@ -152,20 +166,22 @@ function registerIpc() {
   hub.on("device-error", (e) => win?.webContents.send("device:error", e))
 }
 
-/** Native About panel, so version and licence live where macOS expects them. */
-function configureAbout() {
-  const { version } = JSON.parse(
-    readFileSync(join(ROOT, "package.json"), "utf8"),
-  )
-  app.setAboutPanelOptions({
-    applicationName: "שלט טלוויזיה",
-    applicationVersion: version,
-    version: "",
-    credits: "relbns · MIT",
-    copyright:
-      "הפרוטוקול של Android TV Remote v2 אינו מתועד רשמית; הסכמות שבשימוש " +
-      "פוענחו על ידי louis49/androidtv-remote.",
-  })
+/** Identity for the About view, read from the manifest so it cannot drift.
+ *
+ * The native macOS About panel was the obvious choice and the wrong one: this
+ * app has no dock presence, so the panel opened behind the popover with no way
+ * to reach it, wore Electron's own icon, and had nowhere to put a link.
+ */
+function appInfo() {
+  const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"))
+  return {
+    name: "שלט טלוויזיה",
+    version: manifest.version,
+    license: manifest.license,
+    homepage: manifest.homepage,
+    repository: manifest.repository?.url ?? "",
+    electron: process.versions.electron,
+  }
 }
 
 /** Whether the app is really registered to start when the user logs in.
@@ -193,7 +209,6 @@ app.whenReady().then(() => {
   // A menubar utility has no business owning a Dock tile.
   app.dock?.hide()
 
-  configureAbout()
   createWindow()
   createTray()
   registerIpc()

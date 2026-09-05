@@ -13,6 +13,8 @@
 ![platform](https://img.shields.io/badge/Android-Flutter-0B1020?logo=flutter&logoColor=white)
 ![license](https://img.shields.io/badge/license-MIT-E9A93F)
 
+גרסה נוכחית: <!-- version -->**1.0.0**<!-- /version --> · [להורדה](https://tvremote.benesh.io)
+
 <img src="docs/desktop.png" width="300" alt="אפליקציית שורת התפריטים ב-macOS">
 
 </div>

@@ -33,11 +33,12 @@ contextBridge.exposeInMainWorld("tv", {
   getSettings: () => call("settings:get"),
   setSetting: (k, v) => call("settings:set", k, v),
   hide: () => call("window:hide"),
-  about: () => call("app:about"),
+  info: () => call("app:info"),
   openAtLogin: () => call("app:openAtLogin"),
   setOpenAtLogin: (enabled) => call("app:setOpenAtLogin", enabled),
 
   onDevices: (cb) => ipcRenderer.on("devices:changed", (_e, snapshot) => cb(snapshot)),
   onError: (cb) => ipcRenderer.on("device:error", (_e, err) => cb(err)),
   onShown: (cb) => ipcRenderer.on("window:shown", () => cb()),
+  onNavigate: (cb) => ipcRenderer.on("window:navigate", (_e, view) => cb(view)),
 })
