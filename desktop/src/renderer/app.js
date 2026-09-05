@@ -408,6 +408,20 @@ window.tv.info().then((info) => {
 
 window.tv.onNavigate((view) => showView(`${view}-view`))
 
+// The app is installed by hand, so nothing else would ever tell the user a new
+// version exists. A failed check stays silent — it is not their problem.
+async function lookForUpdate() {
+  const update = await window.tv.update().catch(() => null)
+  if (!update) return
+  $("#update-title").textContent = `גרסה ${update.version} זמינה`
+  const banner = $("#update-banner")
+  banner.href = update.downloadUrl
+  banner.hidden = false
+}
+
+lookForUpdate()
+setInterval(lookForUpdate, 6 * 60 * 60 * 1000)
+
 // Reflect the real login-item state rather than a remembered one: the user can
 // change it in System Settings and the checkbox must not disagree.
 const loginToggle = $("#open-at-login")

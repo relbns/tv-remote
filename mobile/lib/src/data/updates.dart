@@ -26,6 +26,14 @@ abstract final class Updates {
   static const _repo = 'tv-remote';
   static const _asset = 'tv-remote-arm64.apk';
 
+  /// Exposed for the version-comparison test: a silent failure here would just
+  /// stop offering updates forever, without ever announcing itself.
+  static String versionFromTag(String tag) =>
+      tag.replaceFirst(RegExp(r'^([a-z]+-)?v'), '');
+
+  static bool isNewer(String candidate, String installed) =>
+      _isNewer(candidate, installed);
+
   static Future<AvailableUpdate?> check() async {
     final installed = (await PackageInfo.fromPlatform()).version;
 
@@ -49,7 +57,8 @@ abstract final class Updates {
         await response.transform(utf8.decoder).join(),
       ) as Map<String, dynamic>;
       final tag = json['tag_name'] as String? ?? '';
-      final latest = tag.replaceFirst(RegExp(r'^[a-z]+-v'), '');
+      // Tags are plain `v1.2.3`; older ones carried a `platform-v` prefix.
+      final latest = tag.replaceFirst(RegExp(r'^([a-z]+-)?v'), '');
       if (latest.isEmpty || !_isNewer(latest, installed)) return null;
 
       return AvailableUpdate(

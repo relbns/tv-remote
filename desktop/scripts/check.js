@@ -7,6 +7,7 @@ import { KEYS, APPS, plain } from "../src/main/shared.js"
 import * as apps from "../src/main/apps.js"
 import * as discovery from "../src/main/discovery.js"
 import * as wol from "../src/main/wol.js"
+import { isNewer, versionFromTag } from "../src/main/updates.js"
 
 const problems = []
 const check = (ok, message) => ok || problems.push(message)
@@ -32,6 +33,16 @@ for (const cmd of KEYS.routing.preferDisplay) {
   if (cmd === "setvolume") continue // handled directly, not via a key table
   check(known.has(cmd), `routing מפנה לפקודה שאינה במפות: ${cmd}`)
 }
+
+// The update check fails silently by design, so a wrong comparison would never
+// announce itself — it would just quietly stop offering updates forever.
+check(isNewer("1.0.1", "1.0.0"), "1.0.1 אמורה להיות חדשה מ-1.0.0")
+check(isNewer("0.10.0", "0.9.0"), "0.10.0 אמורה להיות חדשה מ-0.9.0 (השוואה מספרית)")
+check(isNewer("1.1.0", "1.0.9"), "1.1.0 אמורה להיות חדשה מ-1.0.9")
+check(!isNewer("1.0.0", "1.0.0"), "גרסה זהה אינה עדכון")
+check(!isNewer("0.9.0", "1.0.0"), "גרסה ישנה אינה עדכון")
+check(versionFromTag("v1.2.3") === "1.2.3", "תג v1.2.3 אמור להיקרא כ-1.2.3")
+check(versionFromTag("android-v1.2.3") === "1.2.3", "תג ישן עם קידומת אמור להיקרא נכון")
 
 if (problems.length) {
   console.error("✗ " + problems.join("\n✗ "))
