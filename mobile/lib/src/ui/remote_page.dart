@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../data/controller.dart';
+import '../data/updates.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 import 'widgets/dpad.dart';
@@ -40,6 +43,10 @@ class _RemotePageState extends State<RemotePage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
       children: [
+        if (c.update case final update?) ...[
+          _UpdateBanner(update: update),
+          const SizedBox(height: 10),
+        ],
         _Header(controller: c),
         const SizedBox(height: 14),
         Row(
@@ -153,7 +160,7 @@ class _RemotePageState extends State<RemotePage> {
           spacing: 8,
           children: [
             IconKey(
-              icon: Icons.tv_off_rounded,
+              icon: Icons.power_settings_new_rounded,
               label: 'כיבוי מסך',
               enabled: live,
               onTap: () => c.send('tvpower'),
@@ -548,3 +555,59 @@ Future<void> _showTargetPicker(
     ),
   ),
 );
+
+/// Offers a newer build.
+///
+/// Sideloaded apps have nothing telling a person a new version exists, so the
+/// app says so itself and links straight at the file.
+class _UpdateBanner extends StatelessWidget {
+  const _UpdateBanner({required this.update});
+  final AvailableUpdate update;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+    decoration: BoxDecoration(
+      color: Palette.amberWash,
+      borderRadius: BorderRadius.circular(Radii.md),
+    ),
+    child: Row(
+      spacing: 12,
+      children: [
+        const Icon(
+          Icons.system_update_alt_rounded,
+          size: 20,
+          color: Palette.amber,
+        ),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'גרסה ${update.version} זמינה',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                ),
+              ),
+              const Text(
+                'ההורדה תיפתח בדפדפן',
+                style: TextStyle(fontSize: 11, color: Palette.inkDim),
+              ),
+            ],
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            final uri = Uri.parse(update.downloadUrl);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          },
+          child: const Text('עדכן', style: TextStyle(color: Palette.amber)),
+        ),
+      ],
+    ),
+  );
+}

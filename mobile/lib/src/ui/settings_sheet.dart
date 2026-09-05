@@ -92,6 +92,63 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   ],
                 ),
               ),
+            const SizedBox(height: 10),
+            const Text(
+              'עוצמה, כיבוי ומקור',
+              textAlign: TextAlign.start,
+              style: TextStyle(fontSize: 12, color: Palette.inkDim),
+            ),
+            const Text(
+              'למי הפקודות האלה נשלחות. אם העוצמה לא נשמעת, נסה להחליף',
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontSize: 12,
+                color: Palette.inkDim,
+                height: 1.5,
+              ),
+            ),
+            for (final option in const [
+              ('auto', 'אוטומטי', 'למסך אם יש, אחרת לממיר'),
+              ('display', 'למסך', 'הטלוויזיה עצמה'),
+              ('source', 'לממיר', 'כשהמסך אינו מגיב'),
+            ])
+              Raised(
+                radius: Radii.md,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                onTap: () async {
+                  await widget.controller.setRouting(option.$1);
+                  if (mounted) setState(() {});
+                },
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(option.$2),
+                          Text(
+                            option.$3,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Palette.inkDim,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (widget.controller.routing == option.$1)
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 19,
+                        color: Palette.amber,
+                      ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 8),
             Pill(
               label: 'סטים — מסך וממיר יחד',

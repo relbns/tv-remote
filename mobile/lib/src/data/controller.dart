@@ -11,6 +11,7 @@ import 'discovery.dart';
 import 'session.dart';
 import 'shared_data.dart';
 import 'target.dart';
+import 'updates.dart';
 
 enum LinkState { idle, connecting, connected, pairing, failed }
 
@@ -47,6 +48,9 @@ class RemoteController extends ChangeNotifier {
   String? error;
 
   final Set<String> _paired = {};
+
+  /// Set when a newer release exists. Null while unknown or up to date.
+  AvailableUpdate? update;
 
   final List<Discovered> found = [];
   bool scanning = false;
@@ -132,6 +136,14 @@ class RemoteController extends ChangeNotifier {
     current ??= targets.firstOrNull;
     notifyListeners();
     unawaited(_connectCurrent());
+    unawaited(checkForUpdate());
+  }
+
+  Future<void> checkForUpdate() async {
+    final found = await Updates.check();
+    if (found == null) return;
+    update = found;
+    notifyListeners();
   }
 
   Future<void> _refreshPaired() async {
@@ -261,7 +273,14 @@ class RemoteController extends ChangeNotifier {
     final target = current;
     if (target == null) return;
 
-    final preferDisplay = _shared.preferDisplay.contains(command);
+    // 'auto' follows the shared routing table; an explicit choice overrides it
+    // for the commands where the two halves disagree about who should act.
+    final routable = _shared.preferDisplay.contains(command);
+    final preferDisplay = switch (routing) {
+      'display' => routable,
+      'source' => false,
+      _ => routable,
+    };
     final order = preferDisplay
         ? [target.display, target.source]
         : [target.source, target.display];
@@ -290,7 +309,14 @@ class RemoteController extends ChangeNotifier {
     final target = current;
     if (target == null) return;
 
-    for (final device in target.devices) {
+    // With an explicit choice, power only touches the half that was chosen.
+    final chosen = switch (routing) {
+      'display' => [?target.display],
+      'source' => [?target.source],
+      _ => target.devices,
+    };
+
+    for (final device in chosen) {
       final session = _sessions[device.id];
       if (session == null || !session.isConnected) continue;
       // A screen understands "turn off"; a box toggles its own standby.
@@ -546,6 +572,14 @@ class RemoteController extends ChangeNotifier {
   /* ---------------- preferences and backup ---------------- */
 
   int get defaultTab => _store.defaultTab;
+
+  /// 'auto' | 'display' | 'source'
+  String get routing => _store.routing;
+
+  Future<void> setRouting(String value) async {
+    await _store.setRouting(value);
+    notifyListeners();
+  }
 
   Future<void> setDefaultTab(int index) async {
     await _store.setDefaultTab(index);

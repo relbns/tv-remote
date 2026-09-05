@@ -214,6 +214,14 @@ class DeviceStore {
   int get defaultTab => _prefs.getInt('defaultTab') ?? 0;
   Future<void> setDefaultTab(int index) => _prefs.setInt('defaultTab', index);
 
+  /// Where volume, power and input should go in a set.
+  ///
+  /// 'auto' follows the shared routing table — screen first. Some setups work
+  /// better the other way: a box whose own volume actually drives the output,
+  /// or a screen that ignores what it is sent.
+  String get routing => _prefs.getString('routing') ?? 'auto';
+  Future<void> setRouting(String value) => _prefs.setString('routing', value);
+
   /* ---------------- app shortcuts ---------------- */
 
   List<AppEntry>? shortcuts(String deviceId) {
