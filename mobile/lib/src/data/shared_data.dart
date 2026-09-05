@@ -7,10 +7,11 @@ import 'package:flutter/services.dart';
 /// `tool/sync_shared.sh` copies these in from the repository's `shared/`
 /// directory before a build, so a mapping cannot drift between platforms.
 class SharedData {
-  SharedData._(this._keys, this._apps);
+  SharedData._(this._keys, this._apps, this._help);
 
   final Map<String, dynamic> _keys;
   final Map<String, dynamic> _apps;
+  final Map<String, dynamic> _help;
 
   static SharedData? _instance;
   static SharedData get instance {
@@ -26,11 +27,22 @@ class SharedData {
     final apps = jsonDecode(
       await rootBundle.loadString('assets/shared/apps.json'),
     );
+    final help = jsonDecode(
+      await rootBundle.loadString('assets/shared/help.json'),
+    );
     return _instance = SharedData._(
       keys as Map<String, dynamic>,
       apps as Map<String, dynamic>,
+      help as Map<String, dynamic>,
     );
   }
+
+  /// Help sections that apply to this platform, in the order they should show.
+  List<Map<String, dynamic>> get helpSections => [
+    for (final section in _help['sections'] as List)
+      if ((section as Map<String, dynamic>)['only'] != 'desktop')
+        section.cast<String, dynamic>(),
+  ];
 
   /// Commands the screen half of a set should handle, when there is one.
   Set<String> get preferDisplay => {

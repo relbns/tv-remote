@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld("tv", {
   setSetting: (k, v) => call("settings:set", k, v),
   hide: () => call("window:hide"),
   info: () => call("app:info"),
+  help: () => call("app:help"),
   update: () => call("app:update"),
   download: (url) => call("app:download", url),
   openAtLogin: () => call("app:openAtLogin"),

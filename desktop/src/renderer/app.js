@@ -346,11 +346,16 @@ document.addEventListener("click", (event) => {
   const helpLink = event.target.closest("[data-help]")
   if (helpLink) {
     showView("help-view")
-    const section = $(`#help-${helpLink.dataset.help}`)
-    if (section) {
+    // The sections are rendered asynchronously, so open the target once the
+    // list exists rather than assuming it is already in the document.
+    const open = () => {
+      const section = $(`#help-${helpLink.dataset.help}`)
+      if (!section) return false
       section.open = true
       section.scrollIntoView({ block: "start" })
+      return true
     }
+    if (!open()) renderHelp().then(open)
   }
 })
 
@@ -407,6 +412,42 @@ window.tv.info().then((info) => {
 })
 
 window.tv.onNavigate((view) => showView(`${view}-view`))
+
+/* ---------------- help ---------------- */
+
+// *bold* is the one bit of markup the shared file carries, so that the same
+// sentence can be rendered by an HTML page and by a Flutter widget.
+function emphasise(text) {
+  const escaped = text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c])
+  return escaped.replace(/\*([^*]+)\*/g, "<b>$1</b>")
+}
+
+function helpBlock(block) {
+  if (block.p) return `<p>${emphasise(block.p)}</p>`
+  if (block.note) return `<p class="muted">${emphasise(block.note)}</p>`
+  if (block.ul) return `<ul>${block.ul.map((i) => `<li>${emphasise(i)}</li>`).join("")}</ul>`
+  if (block.table) {
+    const rows = block.table
+      .map((cells) => `<tr>${cells.map((c) => `<td>${emphasise(c)}</td>`).join("")}</tr>`)
+      .join("")
+    return `<table class="routing-table">${rows}</table>`
+  }
+  return ""
+}
+
+async function renderHelp() {
+  const sections = (await window.tv.help()).filter((s) => s.only !== "mobile")
+  $("#help-body").innerHTML = sections
+    .map(
+      (section) => `<details class="help" id="help-${section.id}">
+        <summary>${emphasise(section.title)}</summary>
+        ${section.blocks.map(helpBlock).join("")}
+      </details>`,
+    )
+    .join("")
+}
+
+renderHelp()
 
 // The app is installed by hand, so nothing else would ever tell the user a new
 // version exists. A failed check stays silent — it is not their problem.

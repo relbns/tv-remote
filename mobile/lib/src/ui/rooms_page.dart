@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/controller.dart';
 import '../data/device.dart';
+import 'help_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -46,14 +47,40 @@ class _RoomsPageState extends State<RoomsPage> {
               color: Colors.white.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(Radii.md),
             ),
-            child: const Text(
-              'סט מחבר מסך וממיר לשלט אחד. הניווט והמדיה הולכים לממיר, העוצמה '
-              'ובחירת המקור למסך, וכפתור ההפעלה מכבה ומדליק את שניהם.',
-              style: TextStyle(
-                fontSize: 12.5,
-                height: 1.65,
-                color: Palette.inkMid,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'סט מחבר מסך וממיר לשלט אחד. הניווט והמדיה הולכים לממיר, '
+                  'העוצמה ובחירת המקור למסך, וכפתור ההפעלה מכבה ומדליק את שניהם.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.65,
+                    color: Palette.inkMid,
+                  ),
+                ),
+                // The full routing table is one tap away rather than repeated
+                // here, so there is a single place it can be corrected.
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const HelpPage(openSection: 'sets'),
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'איך הניתוב עובד? →',
+                      style: TextStyle(fontSize: 12, color: Palette.amber),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           if (c.rooms.isNotEmpty) ...[

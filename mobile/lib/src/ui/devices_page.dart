@@ -6,6 +6,7 @@ import '../data/device.dart';
 import '../data/discovery.dart';
 import '../data/target.dart';
 import 'settings_sheet.dart';
+import 'help_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -424,6 +425,25 @@ class _CodeDialogState extends State<_CodeDialog> {
         const Text(
           'על מסך הטלוויזיה מופיע קוד בן שישה תווים. הצימוד נדרש פעם אחת בלבד.',
           style: TextStyle(fontSize: 12.5, color: Palette.inkMid, height: 1.6),
+        ),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const HelpPage(openSection: 'pairing'),
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'הקוד לא מתקבל? →',
+              style: TextStyle(fontSize: 12, color: Palette.amber),
+            ),
+          ),
         ),
         TextField(
           controller: _controller,

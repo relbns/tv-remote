@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import { hub } from "./hub.js"
 import * as store from "./store.js"
+import { HELP } from "./shared.js"
 import { checkForUpdate } from "./updates.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -157,6 +158,7 @@ function registerIpc() {
   handle("settings:set", (k, v) => store.setSetting(k, v))
   handle("window:hide", () => hideWindow())
   handle("app:info", () => appInfo())
+  handle("app:help", () => HELP.sections)
   handle("app:update", () => checkForUpdate(appInfo().version))
   handle("app:download", (url) => shell.openExternal(url))
   handle("app:openAtLogin", () => opensAtLogin())

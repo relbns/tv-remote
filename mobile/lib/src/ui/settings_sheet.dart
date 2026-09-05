@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/controller.dart';
 import 'about_sheet.dart';
+import 'help_page.dart';
 import 'rooms_page.dart';
 import 'transfer_page.dart';
 import 'theme.dart';
@@ -178,6 +179,15 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   MaterialPageRoute<void>(
                     builder: (_) => TransferPage(controller: widget.controller),
                   ),
+                );
+              },
+            ),
+            Pill(
+              label: 'עזרה',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const HelpPage()),
                 );
               },
             ),
