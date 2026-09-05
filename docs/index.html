@@ -47,11 +47,10 @@
   .hero::before{content:"";position:absolute;inset:-90px -40px auto;height:280px;
     background:radial-gradient(50% 60% at 50% 40%,rgba(233,169,63,.14),transparent 70%);
     pointer-events:none}
-  .mark{width:88px;height:88px;margin:0 auto 22px;border-radius:50%;position:relative;
-    background:conic-gradient(var(--amber) 0 23%,transparent 0 27%,var(--amber) 0 48%,
-      transparent 0 52%,var(--amber) 0 73%,transparent 0 77%,var(--amber) 0);
-    -webkit-mask:radial-gradient(circle,#000 25%,transparent 26%,#000 42%,transparent 43%);
-            mask:radial-gradient(circle,#000 25%,transparent 26%,#000 42%,transparent 43%)}
+  /* The real icon, not a CSS approximation of it. The conic gradient that used
+     to stand in here cut the four gaps by angle, so they splayed into wedges,
+     and the radial mask left every edge soft. */
+  .mark{width:92px;height:92px;margin:0 auto 22px;display:block;border-radius:21px}
   h1{font-size:clamp(28px,7vw,38px);font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
   .lede{color:var(--ink-mid);font-size:16px;line-height:1.75;margin:0 auto;max-width:44ch}
 
@@ -112,7 +111,7 @@
 <div class="wrap">
 
   <header class="hero">
-    <div class="mark" role="img" aria-label="סמל האפליקציה"></div>
+    <img class="mark" src="icon.png" width="92" height="92" alt="סמל Orbit">
     <h1>Orbit</h1>
     <p class="lede">
       שלט לממירי Android TV ולטלוויזיות חכמות — מהטלפון ומהמק.
@@ -125,7 +124,7 @@
       <a class="btn" id="btn-android"
          href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-arm64.apk">
         הורד לאנדרואיד
-        <small>APK · כ-22MB</small>
+        <small>APK · 20MB</small>
       </a>
       <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-universal.apk">
         לא נתמך במכשיר שלך? הגרסה האוניברסלית
@@ -135,7 +134,7 @@
       <a class="btn second" id="btn-mac"
          href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-mac-arm64.dmg">
         הורד למק
-        <small>DMG · שבב Apple · כ-122MB</small>
+        <small>DMG · שבב Apple · 121MB</small>
       </a>
       <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-mac-x64.dmg">
         מק עם מעבד Intel? הגרסה לאינטל
