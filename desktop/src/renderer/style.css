@@ -147,7 +147,7 @@ button:disabled { opacity: 0.35; cursor: default; }
 
 .round {
   flex: 1;
-  height: 34px;
+  height: 38px;
   border: none;
   border-radius: 9px;
   background: var(--surface);
@@ -238,7 +238,7 @@ input[type="text"]:focus { outline: none; border-color: var(--accent); }
   align-items: center;
   background: var(--surface);
   border-radius: 9px;
-  height: 34px;
+  height: 38px;
   overflow: hidden;
 }
 .stepper button {
@@ -249,7 +249,24 @@ input[type="text"]:focus { outline: none; border-color: var(--accent); }
   font-size: 16px;
 }
 .stepper button:hover { background: var(--surface-hi); }
-.stepper-label { font-size: 10px; color: var(--muted); text-align: center; }
+.stepper-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  /* The reading sits under the word, the way it does on the phone. Inline it
+     ran straight into the label — "עוצמה15". */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.25;
+}
+.stepper-label b {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
 
 .apps { flex-wrap: wrap; }
 .apps:empty { display: none; }

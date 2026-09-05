@@ -59,7 +59,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: android
-          path: tv-remote-*.apk
+          path: orbit-*.apk
 
   desktop:
     runs-on: macos-latest

@@ -15,7 +15,13 @@
 
 גרסה נוכחית: <!-- version -->**1.0.0**<!-- /version --> · [להורדה](https://tvremote.benesh.io)
 
-<img src="docs/desktop.png" width="300" alt="אפליקציית שורת התפריטים ב-macOS">
+<p>
+  <img src="docs/desktop.png" width="270" alt="Orbit בשורת התפריטים של macOS, מחובר לממיר">
+  &nbsp;&nbsp;
+  <img src="docs/mobile.png" width="270" alt="Orbit באנדרואיד, מחובר לממיר">
+</p>
+
+<sub>שורת התפריטים ב-macOS · אנדרואיד</sub>
 
 </div>
 
