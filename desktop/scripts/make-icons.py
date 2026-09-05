@@ -46,7 +46,10 @@ def png(path, width, height, raw):
 def app_icon(path, n=1024, s=3):
     """The rounded plate with the ring on it, ready for iconutil."""
     half, plate_half = n / 2.0, PLATE / 2.0 * n / 1024.0
-    scale = n / 1024.0
+    # The ring must keep the same share of the plate that it has of the phone
+    # icon's full canvas. Drawing it at the design size on a smaller plate made
+    # it too heavy, and widened the four gaps into visible wedges.
+    scale = n / 1024.0 * (PLATE / 1024.0)
     rows = bytearray()
     for j in range(n):
         rows.append(0)

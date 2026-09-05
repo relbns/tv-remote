@@ -20,7 +20,8 @@
     "icons": "python3 scripts/make-icons.py && bash scripts/make-appicon.sh",
     "smoke": "node scripts/smoke.js",
     "discover": "node scripts/test-discovery.js",
-    "check": "node scripts/sync-shared.js && node scripts/check.js"
+    "check": "node scripts/sync-shared.js && node scripts/check.js",
+    "og": "electron scripts/make-og.js"
   },
   "dependencies": {
     "@kud/androidtv-remote": "^0.1.2",
