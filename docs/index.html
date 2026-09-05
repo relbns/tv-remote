@@ -40,7 +40,8 @@
   .lede{color:var(--ink-mid);font-size:16px;line-height:1.75;margin:0 auto;max-width:44ch}
 
   /* ---- download ---- */
-  .get{margin:36px 0 10px}
+  .get{margin:36px 0 10px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .pick{display:flex;flex-direction:column;gap:8px}
   .btn{display:block;text-decoration:none;text-align:center;font-weight:600;font-size:17px;
     color:#2A1D08;background:linear-gradient(180deg,#F2BC5C,var(--amber) 46%,var(--amber-deep));
     padding:19px;border-radius:18px;
@@ -48,9 +49,16 @@
     transition:transform .12s ease,filter .12s ease}
   .btn:hover{filter:brightness(1.05)} .btn:active{transform:scale(.985)}
   .btn small{display:block;font-weight:400;font-size:13px;opacity:.72;margin-top:3px}
-  .alt{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--ink-dim);
+  /* Only one platform can be the visitor's. The other stays available but stops
+     competing for the eye, so the page still answers "what do I click". */
+  .btn.second{background:var(--surface);color:var(--ink);
+    box-shadow:0 6px 16px rgba(0,0,0,.28);font-size:16px}
+  .btn.second:hover{filter:none;background:#1B2233}
+  .alt{display:block;text-align:center;font-size:13px;color:var(--ink-dim);
     text-decoration:none}
   .alt:hover{color:var(--ink-mid)}
+  /* Platform order is decided at runtime; without JS both are simply present. */
+  .get.mac-first .pick.mac{order:-1}
 
   /* ---- steps ---- */
   h2{font-size:15px;font-weight:600;color:var(--ink-mid);margin:52px 0 16px;
@@ -91,26 +99,49 @@
     <div class="mark" role="img" aria-label="סמל האפליקציה"></div>
     <h1>שלט טלוויזיה</h1>
     <p class="lede">
-      שלט לממירי Android TV ולטלוויזיות חכמות, ישירות מהטלפון.
+      שלט לממירי Android TV ולטלוויזיות חכמות — מהטלפון ומהמק.
       הכל רץ ברשת הביתית — בלי ענן, בלי חשבון, בלי שרת באמצע.
     </p>
   </header>
 
-  <div class="get">
-    <a class="btn" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk">
-      הורד לאנדרואיד
-      <small>APK · כ-18MB</small>
-    </a>
-    <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-universal.apk">
-      לא נתמך במכשיר שלך? נסה את הגרסה האוניברסלית (52MB)
-    </a>
+  <div class="get" id="get">
+    <div class="pick android">
+      <a class="btn" id="btn-android"
+         href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk">
+        הורד לאנדרואיד
+        <small>APK · כ-22MB</small>
+      </a>
+      <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-universal.apk">
+        לא נתמך במכשיר שלך? הגרסה האוניברסלית
+      </a>
+    </div>
+    <div class="pick mac">
+      <a class="btn second" id="btn-mac"
+         href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-mac-arm64.dmg">
+        הורד למק
+        <small>DMG · שבב Apple · כ-122MB</small>
+      </a>
+      <a class="alt" href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-mac-x64.dmg">
+        מק עם מעבד Intel? הגרסה לאינטל
+      </a>
+    </div>
   </div>
 
-  <h2>התקנה</h2>
+  <h2>התקנה באנדרואיד</h2>
   <ol class="steps">
     <li><span>פתח את הקובץ שהורדת. אנדרואיד יבקש <b>אישור חד־פעמי</b> להתקנה ממקור לא מוכר — זה תקין לאפליקציה שאינה מגיעה מחנות.</span></li>
     <li><span>ודא שהטלפון והממיר על <b>אותה רשת Wi-Fi</b>. בלי זה הם לא רואים זה את זה.</span></li>
     <li><span>פתח את האפליקציה, עבור ללשונית <b>מכשירים</b>, לחץ <b>חפש מכשירים</b> ואז <b>צמד</b>. הקלד את הקוד בן שישה התווים שיופיע על מסך הטלוויזיה — פעם אחת בלבד.</span></li>
+  </ol>
+
+  <h2>התקנה במק</h2>
+  <ol class="steps">
+    <li><span>פתח את קובץ ה-DMG וגרור את <b>TV Remote</b> לתיקיית האפליקציות.</span></li>
+    <li><span>בפתיחה הראשונה macOS יחסום, כי לפרויקט אין תעודת מפתח בתשלום של Apple.
+      פתח <b>הגדרות המערכת ← פרטיות ואבטחה</b>, גלול למטה ולחץ <b>פתח בכל זאת</b>.
+      פעם אחת בלבד. אין צורך בטרמינל ואין צורך להדר שום דבר.</span></li>
+    <li><span>השלט יושב ב<b>שורת התפריטים</b> ולא בסרגל האפליקציות. לחץ על הסמל כדי לפתוח אותו,
+      וב<b>הגדרות</b> אפשר לבקש שיעלה אוטומטית עם הכניסה למחשב.</span></li>
   </ol>
 
   <h2>מה היא עושה</h2>
@@ -146,5 +177,17 @@
   </footer>
 
 </div>
+
+<script>
+  // Lead with the platform the visitor is actually on. Both downloads stay
+  // present either way — this only decides which one is the obvious one.
+  var mac = navigator.platform.indexOf("Mac") === 0 || /Mac OS X/.test(navigator.userAgent)
+  var touch = matchMedia("(pointer: coarse)").matches
+  if (mac && !touch) {
+    document.getElementById("get").classList.add("mac-first")
+    document.getElementById("btn-mac").classList.remove("second")
+    document.getElementById("btn-android").classList.add("second")
+  }
+</script>
 </body>
 </html>

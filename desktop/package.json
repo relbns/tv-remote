@@ -44,7 +44,7 @@
       "output": "dist",
       "buildResources": "assets"
     },
-    "artifactName": "TV-Remote-${version}-${arch}.${ext}",
+    "artifactName": "tv-remote-mac-${arch}.${ext}",
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "assets/icon.icns",

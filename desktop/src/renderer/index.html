@@ -37,12 +37,35 @@
       </section>
 
       <!-- ============ remote ============ -->
+  <!-- One icon set for the whole window, matching the phone app's glyphs.
+       Emoji were rendering at the mercy of the system font and never looked
+       like part of the interface. -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <g id="ic-home"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></g>
+      <g id="ic-back"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></g>
+      <g id="ic-menu"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></g>
+      <g id="ic-guide"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></g>
+      <g id="ic-prev"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></g>
+      <g id="ic-rewind"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></g>
+      <g id="ic-play"><path d="M8 5v14l11-7z"/></g>
+      <g id="ic-forward"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></g>
+      <g id="ic-next"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></g>
+      <g id="ic-minus"><path d="M19 13H5v-2h14v2z"/></g>
+      <g id="ic-plus"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></g>
+      <g id="ic-volume"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></g>
+      <g id="ic-muted"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></g>
+      <g id="ic-power"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></g>
+      <g id="ic-input"><path d="M21 3.01H3c-1.1 0-2 .9-2 2V9h2V4.99h18v14.03H3V15H1v4.01c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98v-14c0-1.11-.9-2-2-2zM11 16l4-4-4-4v3H1v2h10v3z"/></g>
+      <g id="ic-settings"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></g>
+    </defs>
+  </svg>
       <section id="remote-view" class="view">
         <div class="row quick">
-          <button class="pill" data-cmd="home">בית</button>
-          <button class="pill" data-cmd="back">חזור</button>
-          <button class="pill" data-cmd="menu">תפריט</button>
-          <button class="pill" data-cmd="guide">מדריך</button>
+          <button class="pill" data-cmd="home" title="בית" aria-label="בית"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-home"/></svg></button>
+          <button class="pill" data-cmd="back" title="חזור" aria-label="חזור"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+          <button class="pill" data-cmd="menu" title="תפריט" aria-label="תפריט"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-menu"/></svg></button>
+          <button class="pill" data-cmd="guide" title="מדריך" aria-label="מדריך"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-guide"/></svg></button>
         </div>
 
         <div class="dpad" role="group" aria-label="ניווט">
@@ -54,24 +77,24 @@
         </div>
 
         <div class="row media">
-          <button class="round" data-cmd="prev" title="הקודם">⏮</button>
-          <button class="round" data-cmd="rewind" title="אחורה">⏪</button>
-          <button class="round wide" data-cmd="playpause" title="נגן / השהה">⏯</button>
-          <button class="round" data-cmd="forward" title="קדימה">⏩</button>
-          <button class="round" data-cmd="next" title="הבא">⏭</button>
+          <button class="round" data-cmd="prev" title="הקודם" aria-label="הקודם"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-prev"/></svg></button>
+          <button class="round" data-cmd="rewind" title="אחורה" aria-label="אחורה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-rewind"/></svg></button>
+          <button class="round wide accent" data-cmd="playpause" title="נגן / השהה" aria-label="נגן או השהה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-play"/></svg></button>
+          <button class="round" data-cmd="forward" title="קדימה" aria-label="קדימה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-forward"/></svg></button>
+          <button class="round" data-cmd="next" title="הבא" aria-label="הבא"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-next"/></svg></button>
         </div>
 
         <div class="row sliders">
           <div class="stepper" role="group" aria-label="עוצמת שמע">
-            <button data-cmd="voldown" aria-label="הנמכת עוצמה">−</button>
+            <button data-cmd="voldown" aria-label="הנמכת עוצמה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button>
             <span class="stepper-label">עוצמה<b id="vol-read" hidden></b></span>
-            <button data-cmd="volup" aria-label="הגברת עוצמה">+</button>
+            <button data-cmd="volup" aria-label="הגברת עוצמה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button>
           </div>
-          <button class="round" data-cmd="mute" id="mute-btn" title="השתקה">🔇</button>
+          <button class="round" data-cmd="mute" id="mute-btn" title="השתקה" aria-label="השתקה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-volume"/></svg></button>
           <div class="stepper" role="group" aria-label="ערוץ">
-            <button data-cmd="chdown" aria-label="ערוץ קודם">−</button>
+            <button data-cmd="chdown" aria-label="ערוץ קודם"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button>
             <span class="stepper-label">ערוץ</span>
-            <button data-cmd="chup" aria-label="ערוץ הבא">+</button>
+            <button data-cmd="chup" aria-label="ערוץ הבא"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button>
           </div>
         </div>
 
@@ -88,9 +111,9 @@
         </div>
 
         <div class="row tv-extras">
-          <button class="pill ghost" data-cmd="tvpower">כיבוי מסך</button>
-          <button class="pill ghost" data-cmd="input">מקור</button>
-          <button class="pill ghost" data-cmd="settings">הגדרות</button>
+          <button class="pill ghost" data-cmd="tvpower" title="כיבוי מסך"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-power"/></svg><span>מסך</span></button>
+          <button class="pill ghost" data-cmd="input" title="בחירת מקור"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-input"/></svg><span>מקור</span></button>
+          <button class="pill ghost" data-cmd="settings" title="הגדרות הטלוויזיה"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-settings"/></svg><span>הגדרות</span></button>
         </div>
 
         <p class="hint" id="hint"></p>

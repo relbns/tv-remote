@@ -112,7 +112,9 @@ function renderRemote() {
   const caps = new Set(t?.capabilities ?? [])
   const connected = Boolean(t?.status.connected)
 
-  el.mute.textContent = t?.status.muted ? "🔈" : "🔇"
+  const muted = Boolean(t?.status.muted)
+  el.mute.querySelector("use").setAttribute("href", muted ? "#ic-muted" : "#ic-volume")
+  el.mute.classList.toggle("accent", muted)
 
   // Show what the device reports. A maximum of 0 means the volume keys have
   // nothing to act on, which is worth saying rather than leaving to guesswork.

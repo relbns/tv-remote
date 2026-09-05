@@ -93,11 +93,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: שם קובץ ה-DMG לפי הגרסה
+      - name: איסוף הקבצים לשחרור
         run: |
           mkdir -p out
           cp artifacts/android/*.apk out/
-          for f in artifacts/desktop/*.dmg; do cp "$f" "out/tv-remote-mac.dmg"; done
+          # electron-builder כבר נותן שם יציב לכל ארכיטקטורה, כדי שקישורי
+          # latest/download באתר לא ישברו בכל גרסה.
+          cp artifacts/desktop/*.dmg out/
           ls -la out
       - uses: softprops/action-gh-release@v2
         with:
@@ -112,6 +114,9 @@ jobs:
 
             ## macOS
 
-            הורד את **tv-remote-mac.dmg** וגרור לתיקיית האפליקציות. הקובץ אינו
-            חתום בתעודת Apple, ולכן בפתיחה הראשונה לחיצה ימנית ← **Open** ←
-            **Open** שוב, פעם אחת בלבד.
+            **tv-remote-mac-arm64.dmg** למק עם שבב Apple, ו-**tv-remote-mac-x64.dmg**
+            למק עם מעבד Intel. פתח וגרור לתיקיית האפליקציות.
+
+            אין לפרויקט תעודת מפתח של Apple, ולכן בפתיחה הראשונה macOS יחסום.
+            הפתרון: **הגדרות המערכת ← פרטיות ואבטחה**, לגלול למטה וללחוץ
+            **פתח בכל זאת**. פעם אחת בלבד, ומכאן זה נפתח כרגיל.
