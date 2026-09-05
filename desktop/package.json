@@ -35,10 +35,10 @@
     "electron": "^44.1.1",
     "electron-builder": "^26.15.3"
   },
-  "productName": "TV Remote",
+  "productName": "Orbit",
   "build": {
-    "appId": "io.benesh.tvremote",
-    "productName": "TV Remote",
+    "appId": "io.benesh.orbit",
+    "productName": "Orbit",
     "copyright": "© Ariel Benesh",
     "files": [
       "src/**/*",
@@ -50,7 +50,7 @@
       "output": "dist",
       "buildResources": "assets"
     },
-    "artifactName": "tv-remote-mac-${arch}.${ext}",
+    "artifactName": "orbit-mac-${arch}.${ext}",
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "assets/icon.icns",
@@ -69,7 +69,7 @@
       }
     },
     "dmg": {
-      "title": "TV Remote ${version}",
+      "title": "Orbit ${version}",
       "contents": [
         {
           "x": 140,

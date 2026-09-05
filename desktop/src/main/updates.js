@@ -47,7 +47,7 @@ export async function checkForUpdate(installed) {
     const latest = versionFromTag(release.tag_name)
     if (!latest || !isNewer(latest, installed)) return null
 
-    const asset = arch === "x64" ? "tv-remote-mac-x64.dmg" : "tv-remote-mac-arm64.dmg"
+    const asset = arch === "x64" ? "orbit-mac-x64.dmg" : "orbit-mac-arm64.dmg"
     return {
       version: latest,
       downloadUrl: `https://github.com/${OWNER}/${REPO}/releases/latest/download/${asset}`,

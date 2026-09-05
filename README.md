@@ -1,8 +1,8 @@
 <div align="center">
 
-# שלט טלוויזיה
+# Orbit
 
-**שלט לממירי Android TV ולטלוויזיות חכמות — למחשב ולנייד.**
+**Orbit — שלט לממירי Android TV ולטלוויזיות חכמות, למחשב ולנייד.**
 הכל רץ ברשת הביתית. בלי ענן, בלי חשבון, בלי שרת באמצע.
 
 [![desktop](https://github.com/relbns/tv-remote/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/relbns/tv-remote/actions/workflows/desktop-ci.yml)

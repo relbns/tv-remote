@@ -47,14 +47,14 @@ jobs:
       # universal build stays available for anything older.
       - run: flutter build apk --release --target-platform android-arm64
         working-directory: mobile
-      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk tv-remote-arm64.apk
+      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk orbit-arm64.apk
 
       - run: flutter build apk --release
         working-directory: mobile
-      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk tv-remote-universal.apk
+      - run: cp mobile/build/app/outputs/flutter-apk/app-release.apk orbit-universal.apk
 
       - name: אימות שה-APK יכול להתחבר לרשת
-        run: mobile/tool/check_apk.sh tv-remote-arm64.apk
+        run: mobile/tool/check_apk.sh orbit-arm64.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -108,13 +108,13 @@ jobs:
           body: |
             ## אנדרואיד
 
-            הורד את **tv-remote-arm64.apk** ופתח אותו. יופיע אישור חד־פעמי
+            הורד את **orbit-arm64.apk** ופתח אותו. יופיע אישור חד־פעמי
             להתקנה ממקור לא מוכר — זה תקין לאפליקציה שאינה מגיעה מחנות.
-            `tv-remote-universal.apk` גדול פי שלושה ונחוץ רק למכשיר ישן במיוחד.
+            `orbit-universal.apk` גדול פי שלושה ונחוץ רק למכשיר ישן במיוחד.
 
             ## macOS
 
-            **tv-remote-mac-arm64.dmg** למק עם שבב Apple, ו-**tv-remote-mac-x64.dmg**
+            **orbit-mac-arm64.dmg** למק עם שבב Apple, ו-**orbit-mac-x64.dmg**
             למק עם מעבד Intel. פתח וגרור לתיקיית האפליקציות.
 
             אין לפרויקט תעודת מפתח של Apple, ולכן בפתיחה הראשונה macOS יחסום.

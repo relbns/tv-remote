@@ -96,7 +96,7 @@ function createTray() {
   if (icon.isEmpty()) throw new Error("אייקון שורת התפריטים לא נטען — הרץ npm run icons")
   icon.setTemplateImage(true)
   tray = new Tray(icon)
-  tray.setToolTip("שלט טלוויזיה")
+  tray.setToolTip("Orbit")
   tray.on("click", toggleWindow)
   tray.on("right-click", () => {
     tray.popUpContextMenu(
@@ -178,7 +178,7 @@ function registerIpc() {
 function appInfo() {
   const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"))
   return {
-    name: "שלט טלוויזיה",
+    name: "Orbit",
     version: manifest.version,
     license: manifest.license,
     homepage: manifest.homepage,

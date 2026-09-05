@@ -5,7 +5,7 @@
          This app talks TCP to devices on the local network only. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="שלט טלוויזיה"
+        android:label="Orbit"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

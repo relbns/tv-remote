@@ -223,7 +223,7 @@ class _ExportView extends StatelessWidget {
 
     if (!context.mounted) return;
     await SharePlus.instance.share(
-      ShareParams(files: [XFile(file.path)], subject: 'הגדרות שלט טלוויזיה'),
+      ShareParams(files: [XFile(file.path)], subject: 'הגדרות Orbit'),
     );
   }
 }

@@ -3,7 +3,7 @@
 ## הקישור הקבוע
 
 ```
-https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk
+https://github.com/relbns/tv-remote/releases/latest/download/orbit-arm64.apk
 ```
 
 הקישור הזה **לא נשבר בשחרור הבא**. GitHub מפנה אותו תמיד לגרסה האחרונה, ולכן
@@ -13,8 +13,8 @@ https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk
 
 | קובץ | גודל | למי |
 | --- | --- | --- |
-| `tv-remote-arm64.apk` | ~18MB | כל טלפון מ-2016 והלאה — ברירת המחדל |
-| `tv-remote-universal.apk` | ~52MB | מכשיר ישן במיוחד, אם הראשון לא נתמך |
+| `orbit-arm64.apk` | ~18MB | כל טלפון מ-2016 והלאה — ברירת המחדל |
+| `orbit-universal.apk` | ~52MB | מכשיר ישן במיוחד, אם הראשון לא נתמך |
 
 הקובץ האוניברסלי נושא שלוש ארכיטקטורות מעבד ולכן גדול פי שלושה. הפניה אליו
 כברירת מחדל היא הסיבה הנפוצה להורדה שנתקעת בנייד.
@@ -23,12 +23,12 @@ https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk
 
 ```html
 <a class="apk-download"
-   href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-arm64.apk">
+   href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-arm64.apk">
   הורד לאנדרואיד
 </a>
 <p class="apk-note">
   אנדרואיד יבקש אישור חד־פעמי להתקנה ממקור לא מוכר.
-  <a href="https://github.com/relbns/tv-remote/releases/latest/download/tv-remote-universal.apk">
+  <a href="https://github.com/relbns/tv-remote/releases/latest/download/orbit-universal.apk">
     גרסה למכשירים ישנים
   </a>
 </p>

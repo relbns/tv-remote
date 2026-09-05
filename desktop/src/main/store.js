@@ -1,9 +1,37 @@
 import { app } from "electron"
-import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs"
+import {
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  mkdirSync,
+  existsSync,
+  copyFileSync,
+} from "node:fs"
 import { join, dirname } from "node:path"
 
 let FILE = null
 const file = () => (FILE ??= join(app.getPath("userData"), "devices.json"))
+
+/** Carry the pairings across the rename from "TV Remote" to "Orbit".
+ *
+ * Electron derives the data directory from the product name, so renaming the
+ * app silently pointed it at an empty folder. Pairings are not cheap to
+ * recreate — each one means walking to the television and reading a code off
+ * the screen — so they move with the app rather than being lost to a rename.
+ */
+function adoptPreviousStore() {
+  const current = file()
+  if (existsSync(current)) return
+  const previous = join(dirname(app.getPath("userData")), "TV Remote", "devices.json")
+  if (!existsSync(previous)) return
+  try {
+    mkdirSync(dirname(current), { recursive: true })
+    copyFileSync(previous, current)
+  } catch {
+    // A failed migration must not stop the app from starting; the worst case
+    // is pairing again, which still works.
+  }
+}
 
 const SCHEMA = 2
 
@@ -52,6 +80,7 @@ function migrate(saved) {
 
 function load() {
   if (cache) return cache
+  adoptPreviousStore()
   let migrated = false
   try {
     const raw = JSON.parse(readFileSync(file(), "utf8"))

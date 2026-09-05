@@ -6,7 +6,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https:;"
     />
-    <title>שלט טלוויזיה</title>
+    <title>Orbit</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -172,6 +172,15 @@
           <button class="icon-btn" id="help-btn" title="עזרה" aria-label="עזרה">?</button>
         </div>
 
+        <div class="section-head"><span>מכשירים</span></div>
+        <div class="device-list" id="device-list"></div>
+        <div class="row scan-row">
+          <button class="primary" id="scan-btn">חפש מכשירים</button>
+          <label class="check"><input type="checkbox" id="deep-scan" /> סריקה עמוקה</label>
+        </div>
+        <div class="device-list" id="found-list"></div>
+        <p class="hint">סריקה עמוקה בודקת כל כתובת ברשת — שימושי לטלוויזיה שהייתה כבויה.</p>
+
         <div class="section-head"><span>סטים — מסך אחד ששולט בהכל</span></div>
         <div class="device-list" id="room-list"></div>
         <div class="card" id="room-builder">
@@ -199,14 +208,6 @@
           <button class="pill ghost" id="about-btn">אודות</button>
         </div>
 
-        <div class="section-head"><span>מכשירים</span></div>
-        <div class="device-list" id="device-list"></div>
-        <div class="row scan-row">
-          <button class="primary" id="scan-btn">חפש מכשירים</button>
-          <label class="check"><input type="checkbox" id="deep-scan" /> סריקה עמוקה</label>
-        </div>
-        <div class="device-list" id="found-list"></div>
-        <p class="hint">סריקה עמוקה בודקת כל כתובת ברשת — שימושי לטלוויזיה שהייתה כבויה.</p>
       </section>
 
       <!-- ============ help ============ -->
@@ -219,7 +220,7 @@
 
         <div class="about-card">
           <img class="about-icon" src="../../assets/appicon-256.png" alt="" />
-          <b class="about-name">שלט טלוויזיה</b>
+          <b class="about-name">Orbit</b>
           <span class="about-version" id="about-version">—</span>
           <p class="about-blurb">
             שלט לממירי Android TV ולטלוויזיות חכמות. הכל רץ ברשת הביתית —

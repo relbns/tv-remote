@@ -24,7 +24,7 @@ class AvailableUpdate {
 abstract final class Updates {
   static const _owner = 'relbns';
   static const _repo = 'tv-remote';
-  static const _asset = 'tv-remote-arm64.apk';
+  static const _asset = 'orbit-arm64.apk';
 
   /// Exposed for the version-comparison test: a silent failure here would just
   /// stop offering updates forever, without ever announcing itself.

@@ -44,7 +44,7 @@ class TvRemoteApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'שלט טלוויזיה',
+    title: 'Orbit',
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
     // Real localisation rather than a Directionality around the home widget:

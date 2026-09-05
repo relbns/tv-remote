@@ -50,7 +50,7 @@ class _AboutSheet extends StatelessWidget {
           const _Ring(),
           const Center(
             child: Text(
-              'שלט טלוויזיה',
+              'Orbit',
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
             ),
           ),
