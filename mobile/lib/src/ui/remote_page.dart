@@ -45,33 +45,29 @@ class _RemotePageState extends State<RemotePage> {
         Row(
           spacing: 8,
           children: [
-            Expanded(
-              child: Pill(
-                label: 'בית',
-                enabled: live,
-                onTap: () => c.send('home'),
-              ),
+            IconKey(
+              icon: Icons.home_rounded,
+              label: 'בית',
+              enabled: live,
+              onTap: () => c.send('home'),
             ),
-            Expanded(
-              child: Pill(
-                label: 'חזור',
-                enabled: live,
-                onTap: () => c.send('back'),
-              ),
+            IconKey(
+              icon: Icons.arrow_back_rounded,
+              label: 'חזור',
+              enabled: live,
+              onTap: () => c.send('back'),
             ),
-            Expanded(
-              child: Pill(
-                label: 'תפריט',
-                enabled: live,
-                onTap: () => c.send('menu'),
-              ),
+            IconKey(
+              icon: Icons.menu_rounded,
+              label: 'תפריט',
+              enabled: live,
+              onTap: () => c.send('menu'),
             ),
-            Expanded(
-              child: Pill(
-                label: 'מדריך',
-                enabled: live,
-                onTap: () => c.send('guide'),
-              ),
+            IconKey(
+              icon: Icons.grid_view_rounded,
+              label: 'מדריך',
+              enabled: live,
+              onTap: () => c.send('guide'),
             ),
           ],
         ),
@@ -156,26 +152,29 @@ class _RemotePageState extends State<RemotePage> {
         Row(
           spacing: 8,
           children: [
-            Expanded(
-              child: Pill(
-                label: 'כיבוי מסך',
-                enabled: live,
-                onTap: () => c.send('tvpower'),
-              ),
+            IconKey(
+              icon: Icons.tv_off_rounded,
+              label: 'כיבוי מסך',
+              enabled: live,
+              onTap: () => c.send('tvpower'),
             ),
-            Expanded(
-              child: Pill(
-                label: 'מקור',
-                enabled: live,
-                onTap: () => c.send('input'),
-              ),
+            IconKey(
+              icon: Icons.input_rounded,
+              label: 'בחירת מקור',
+              enabled: live,
+              onTap: () => c.send('input'),
             ),
-            Expanded(
-              child: Pill(
-                label: 'הגדרות',
-                enabled: live,
-                onTap: () => c.send('settings'),
-              ),
+            IconKey(
+              icon: Icons.settings_rounded,
+              label: 'הגדרות',
+              enabled: live,
+              onTap: () => c.send('settings'),
+            ),
+            IconKey(
+              icon: Icons.info_outline_rounded,
+              label: 'מידע',
+              enabled: live,
+              onTap: () => c.send('info'),
             ),
           ],
         ),

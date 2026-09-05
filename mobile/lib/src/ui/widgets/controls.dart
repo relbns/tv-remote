@@ -178,3 +178,47 @@ class Lamp extends StatelessWidget {
     return tooltip == null ? dot : Tooltip(message: tooltip!, child: dot);
   }
 }
+
+/// A round icon key.
+///
+/// An icon is read faster than a word and needs no translation, which matters
+/// on a control that is glanced at in the dark. The label survives as the
+/// accessibility name and the tooltip.
+class IconKey extends StatelessWidget {
+  const IconKey({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.enabled = true,
+    this.accent = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool enabled;
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Semantics(
+      button: true,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: Raised(
+          enabled: enabled,
+          onTap: onTap,
+          radius: Radii.md,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Icon(
+            icon,
+            size: 22,
+            color: accent ? Palette.amber : Palette.inkMid,
+          ),
+        ),
+      ),
+    ),
+  );
+}
