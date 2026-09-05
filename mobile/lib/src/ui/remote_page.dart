@@ -639,9 +639,9 @@ void _volume(BuildContext context, RemoteController c, String command) {
   messenger?.showSnackBar(
     SnackBar(
       content: const Text(
-        'הממיר מדווח שאין לו סקאלת עוצמה (0 מתוך 0), ולכן הוא מתעלם ממקשי '
-        'העוצמה. בהגדרות הממיר: תצוגה וקול ← פלט שמע ← PCM/סטריאו במקום '
-        'Passthrough. אחרת צרף את הטלוויזיה לסט ושלוט בעוצמה דרכה.',
+        'הממיר מדווח שאין לו סקאלת עוצמה, כי הוא מוסר אותה לטלוויזיה ב-CEC '
+        'והיא לא מיישמת את זה. בהגדרות הממיר: HDMI-CEC ← בקרת עוצמה ← כבוי. '
+        'לחלופין צרף את הטלוויזיה לסט ושלוט בעוצמה דרכה.',
       ),
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(14),
