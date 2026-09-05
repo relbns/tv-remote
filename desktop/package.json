@@ -11,7 +11,7 @@
     "start": "env -u ELECTRON_RUN_AS_NODE electron .",
     "predist": "node scripts/sync-shared.js",
     "dist": "electron-builder --mac",
-    "icons": "python3 scripts/make-icons.py",
+    "icons": "python3 scripts/make-icons.py && bash scripts/make-appicon.sh",
     "smoke": "node scripts/smoke.js",
     "discover": "node scripts/test-discovery.js",
     "check": "node scripts/sync-shared.js && node scripts/check.js"
@@ -31,26 +31,53 @@
   },
   "productName": "TV Remote",
   "build": {
-    "appId": "co.singalong.tvremote",
+    "appId": "io.benesh.tvremote",
     "productName": "TV Remote",
+    "copyright": "© Ariel Benesh",
     "files": [
       "src/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "!scripts/**/*"
     ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "artifactName": "TV-Remote-${version}-${arch}.${ext}",
     "mac": {
       "category": "public.app-category.utilities",
+      "icon": "assets/icon.icns",
       "target": [
         {
           "target": "dmg",
           "arch": [
-            "arm64"
+            "arm64",
+            "x64"
           ]
         }
       ],
+      "identity": null,
       "extendInfo": {
         "LSUIElement": true
       }
-    }
+    },
+    "dmg": {
+      "title": "TV Remote ${version}",
+      "contents": [
+        {
+          "x": 140,
+          "y": 170,
+          "type": "file"
+        },
+        {
+          "x": 400,
+          "y": 170,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "afterPack": "scripts/adhoc-sign.cjs"
   }
 }
