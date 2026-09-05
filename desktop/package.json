@@ -37,7 +37,7 @@
   },
   "productName": "Orbit",
   "build": {
-    "appId": "io.benesh.orbit",
+    "appId": "io.benesh.tvremote",
     "productName": "Orbit",
     "copyright": "© Ariel Benesh",
     "files": [
