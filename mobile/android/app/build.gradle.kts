@@ -46,7 +46,11 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                // Resolve against android/, where key.properties itself lives.
+                // Plain file() resolves against android/app/, so a relative
+                // path in that file pointed one directory too deep — which only
+                // showed up in CI, where the path is relative.
+                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }

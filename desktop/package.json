@@ -16,7 +16,7 @@
     "prestart": "node scripts/sync-shared.js",
     "start": "env -u ELECTRON_RUN_AS_NODE electron .",
     "predist": "node scripts/sync-shared.js",
-    "dist": "electron-builder --mac",
+    "dist": "electron-builder --mac --publish never",
     "icons": "python3 scripts/make-icons.py && bash scripts/make-appicon.sh",
     "smoke": "node scripts/smoke.js",
     "discover": "node scripts/test-discovery.js",
