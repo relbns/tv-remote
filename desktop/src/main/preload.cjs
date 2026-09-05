@@ -35,6 +35,11 @@ contextBridge.exposeInMainWorld("tv", {
   hide: () => call("window:hide"),
   info: () => call("app:info"),
   help: () => call("app:help"),
+
+  backupPreview: (withCreds) => call("backup:preview", withCreds),
+  backupSave: (withCreds) => call("backup:save", withCreds),
+  backupLoad: () => call("backup:load"),
+  backupPaste: (text) => call("backup:paste", text),
   update: () => call("app:update"),
   download: (url) => call("app:download", url),
   openAtLogin: () => call("app:openAtLogin"),

@@ -205,12 +205,51 @@
           </span>
         </label>
         <div class="row">
+          <button class="pill ghost" id="transfer-btn">העברה למכשיר אחר</button>
           <button class="pill ghost" id="about-btn">אודות</button>
         </div>
 
       </section>
 
       <!-- ============ help ============ -->
+      <!-- ============ transfer ============ -->
+      <section id="transfer-view" class="view" hidden>
+        <div class="sub-head">
+          <button class="icon-btn" data-back aria-label="חזרה">›</button>
+          <h2>העברה למכשיר אחר</h2>
+        </div>
+
+        <div class="section-head"><span>ייצוא</span></div>
+        <div class="pick-row">
+          <button class="pick" id="export-settings">
+            <b>הגדרות בלבד</b>
+            <small>קוד QR או קובץ · יידרש צימוד אחד</small>
+          </button>
+          <button class="pick" id="export-full">
+            <b>כולל צימוד</b>
+            <small>קובץ בלבד · המכשיר השני יעבוד מיד</small>
+          </button>
+        </div>
+
+        <div id="qr-panel" hidden>
+          <div class="qr-frame" id="qr-frame"></div>
+          <p class="hint" id="qr-note"></p>
+          <div class="row">
+            <button class="pill ghost" id="qr-copy">העתק כטקסט</button>
+            <button class="pill ghost" id="qr-file">שמור כקובץ</button>
+          </div>
+        </div>
+
+        <div class="section-head"><span>ייבוא</span></div>
+        <div class="row">
+          <button class="pill ghost" id="import-file">בחר קובץ</button>
+          <button class="pill ghost" id="import-paste">הדבק קוד</button>
+        </div>
+        <p class="hint" id="transfer-note"></p>
+
+        <button class="link-btn" data-help="transfer">מה ההבדל בין השתיים? →</button>
+      </section>
+
       <!-- ============ about ============ -->
       <section id="about-view" class="view" hidden>
         <div class="sub-head">

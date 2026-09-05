@@ -17,7 +17,7 @@ class Backup {
   const Backup({
     required this.devices,
     required this.shortcuts,
-    required this.defaultTab,
+    this.defaultTab,
     this.rooms = const [],
     this.certificates = const {},
   });
@@ -30,7 +30,11 @@ class Backup {
 
   /// Saved app shortcuts, keyed by device id.
   final Map<String, List<AppEntry>> shortcuts;
-  final int defaultTab;
+
+  /// Nullable on purpose: the desktop client has no tabs, so its backups say
+  /// nothing about which one to open, and a missing value must leave the
+  /// receiving device's own choice alone rather than reset it.
+  final int? defaultTab;
 
   /// Pairing certificates, keyed by device id. Empty for a settings-only backup.
   final Map<String, ClientCertificate> certificates;
@@ -45,7 +49,7 @@ class Backup {
       for (final entry in shortcuts.entries)
         entry.key: [for (final app in entry.value) app.toJson()],
     },
-    'defaultTab': defaultTab,
+    if (defaultTab != null) 'defaultTab': defaultTab,
     if (certificates.isNotEmpty)
       'certs': {
         for (final entry in certificates.entries)
@@ -77,7 +81,7 @@ class Backup {
               AppEntry.fromJson(app as Map<String, dynamic>),
           ],
       },
-      defaultTab: json['defaultTab'] as int? ?? 0,
+      defaultTab: json['defaultTab'] as int?,
       certificates: {
         for (final entry in (json['certs'] as Map? ?? const {}).entries)
           entry.key as String: ClientCertificate.fromJson(

@@ -521,3 +521,35 @@ select {
 .update-body small { font-size: 10.5px; color: var(--muted); }
 .update-go { color: var(--accent); font-size: 12px; font-weight: 600; }
 .update-banner:hover { background: rgba(10, 132, 255, 0.22); }
+
+/* ---------- transfer ---------- */
+.pick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  text-align: right;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  border-radius: 12px;
+  padding: 12px 13px;
+}
+.pick:hover { background: var(--surface-hi); }
+.pick b { font-size: 12.5px; font-weight: 600; }
+.pick small { font-size: 10.5px; color: var(--muted); line-height: 1.45; }
+.pick[aria-pressed="true"] { border-color: var(--accent); }
+
+/* The code is scanned off the screen, so it needs a white field around it —
+   a dark ground bleeds into the quiet zone and phones stop reading it. */
+.qr-frame {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+  margin-inline: auto;
+  width: 216px;
+}
+.qr-frame svg { width: 100%; height: auto; display: block; }

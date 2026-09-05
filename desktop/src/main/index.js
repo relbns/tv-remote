@@ -1,11 +1,12 @@
-import { app, BrowserWindow, Tray, Menu, ipcMain, globalShortcut, nativeImage, shell } from "electron"
-import { readFileSync } from "node:fs"
+import { app, BrowserWindow, Tray, Menu, ipcMain, globalShortcut, nativeImage, shell, dialog } from "electron"
+import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import { hub } from "./hub.js"
 import * as store from "./store.js"
 import { HELP } from "./shared.js"
 import { checkForUpdate } from "./updates.js"
+import * as backup from "./backup.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, "..", "..")
@@ -159,6 +160,45 @@ function registerIpc() {
   handle("window:hide", () => hideWindow())
   handle("app:info", () => appInfo())
   handle("app:help", () => HELP.sections)
+
+  handle("backup:preview", async (includeCredentials) => {
+    const data = backup.build({ includeCredentials })
+    const compact = backup.toCompact(data)
+    return {
+      devices: data.devices.length,
+      rooms: data.rooms?.length ?? 0,
+      credentials: Object.keys(data.certs ?? {}).length,
+      // A QR only for the settings shape: a backup with certificates does not
+      // fit in one, and should not be readable off a screen anyway.
+      qr: includeCredentials ? null : await toQr(compact),
+      compact: includeCredentials ? null : compact,
+    }
+  })
+
+  handle("backup:save", async (includeCredentials) => {
+    const data = backup.build({ includeCredentials })
+    const suffix = includeCredentials ? "כולל-צימוד" : "הגדרות"
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      title: "שמירת גיבוי",
+      defaultPath: `orbit-${suffix}.json`,
+      filters: [{ name: "גיבוי Orbit", extensions: ["json"] }],
+    })
+    if (canceled || !filePath) return null
+    writeFileSync(filePath, backup.toPrettyJson(data), { mode: 0o600 })
+    return filePath
+  })
+
+  handle("backup:load", async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      title: "טעינת גיבוי",
+      properties: ["openFile"],
+      filters: [{ name: "גיבוי Orbit", extensions: ["json", "txt"] }],
+    })
+    if (canceled || !filePaths?.length) return null
+    return backup.apply(backup.parse(readFileSync(filePaths[0], "utf8")))
+  })
+
+  handle("backup:paste", (text) => backup.apply(backup.parse(text)))
   handle("app:update", () => checkForUpdate(appInfo().version))
   handle("app:download", (url) => shell.openExternal(url))
   handle("app:openAtLogin", () => opensAtLogin())
@@ -169,6 +209,17 @@ function registerIpc() {
 
   hub.on("devices", (devices) => win?.webContents.send("devices:changed", devices))
   hub.on("device-error", (e) => win?.webContents.send("device:error", e))
+}
+
+/** Render a QR as an inline SVG, so the page needs no image file or network. */
+async function toQr(text) {
+  const { default: QRCode } = await import("qrcode")
+  return QRCode.toString(text, {
+    type: "svg",
+    margin: 1,
+    errorCorrectionLevel: "M",
+    color: { dark: "#0B0E14", light: "#FFFFFF" },
+  })
 }
 
 /** Identity for the About view, read from the manifest so it cannot drift.

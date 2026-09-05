@@ -20,7 +20,10 @@ const el = {
   savedApps: $("#saved-apps"), suggestList: $("#suggest-list"), suggestBlock: $("#suggest-block"),
 }
 
-const VIEWS = ["remote-view", "pair-view", "apps-view", "settings-view", "help-view", "about-view"]
+const VIEWS = [
+  "remote-view", "pair-view", "apps-view", "settings-view",
+  "help-view", "about-view", "transfer-view",
+]
 
 let snapshot = { targets: [], devices: [], rooms: [] }
 let currentId = null
@@ -562,6 +565,16 @@ window.tv.onShown(() => {
   if (current()?.pairing) el.pin.focus()
 })
 
+/** Re-read everything from the store — used after an import rewrites it. */
+async function reload() {
+  snapshot = await window.tv.list()
+  if (!snapshot.targets.some((t) => t.id === currentId)) {
+    currentId = snapshot.targets[0]?.id ?? null
+  }
+  render()
+  await refreshApps()
+}
+
 async function init() {
   const settings = await window.tv.getSettings()
   loginToggle.checked = await window.tv.openAtLogin().catch(() => false)
@@ -573,3 +586,73 @@ async function init() {
 }
 
 init()
+
+
+/* ---------------- transfer ---------------- */
+
+const transferNote = (text) => { $("#transfer-note").textContent = text }
+
+function summarise(result) {
+  if (!result) return "בוטל"
+  const parts = [`${result.devices} מכשירים`]
+  if (result.rooms) parts.push(`${result.rooms} סטים`)
+  if (result.shortcuts) parts.push(`${result.shortcuts} קיצורים`)
+  if (result.credentials) parts.push(`${result.credentials} צימודים`)
+  return `יובאו ${parts.join(", ")}. `
+}
+
+async function showExport(includeCredentials, button) {
+  for (const b of [$("#export-settings"), $("#export-full")]) {
+    b.setAttribute("aria-pressed", String(b === button))
+  }
+  const preview = await window.tv.backupPreview(includeCredentials)
+  const panel = $("#qr-panel")
+  panel.hidden = false
+  $("#qr-frame").hidden = !preview.qr
+  $("#qr-frame").innerHTML = preview.qr ?? ""
+  $("#qr-copy").hidden = !preview.compact
+  window.__compact = preview.compact
+
+  const counts = [`${preview.devices} מכשירים`]
+  if (preview.rooms) counts.push(`${preview.rooms} סטים`)
+  $("#qr-note").textContent = includeCredentials
+    ? `${counts.join(", ")} ו-${preview.credentials} צימודים. הקובץ שקול לגישה מלאה למכשירים — אל תשלח אותו בערוץ פתוח.`
+    : `${counts.join(", ")}. סרוק מהמכשיר השני, או שמור כקובץ. אין כאן צימודים, אז אין סיכון בשיתוף.`
+}
+
+$("#transfer-btn").onclick = () => {
+  $("#qr-panel").hidden = true
+  transferNote("")
+  showView("transfer-view")
+}
+$("#export-settings").onclick = (e) => showExport(false, e.currentTarget)
+$("#export-full").onclick = (e) => showExport(true, e.currentTarget)
+
+$("#qr-copy").onclick = async () => {
+  await navigator.clipboard.writeText(window.__compact ?? "")
+  transferNote("הקוד הועתק. הדבק אותו במכשיר השני.")
+}
+$("#qr-file").onclick = async () => {
+  const withCreds = $("#export-full").getAttribute("aria-pressed") === "true"
+  const path = await window.tv.backupSave(withCreds)
+  transferNote(path ? `נשמר: ${path}` : "בוטל")
+}
+
+$("#import-file").onclick = async () => {
+  try {
+    transferNote(summarise(await window.tv.backupLoad()))
+    await reload()
+  } catch (err) {
+    transferNote(err.message)
+  }
+}
+$("#import-paste").onclick = async () => {
+  const text = await navigator.clipboard.readText()
+  if (!text.trim()) return transferNote("הלוח ריק — העתק קודם את הקוד מהמכשיר השני.")
+  try {
+    transferNote(summarise(await window.tv.backupPaste(text)))
+    await reload()
+  } catch (err) {
+    transferNote(err.message)
+  }
+}

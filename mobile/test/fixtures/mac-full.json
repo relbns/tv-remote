@@ -1,0 +1,41 @@
+{
+  "v": 1,
+  "devices": [
+    {
+      "id": "androidtv-192-0-2-1",
+      "kind": "androidtv",
+      "name": "ממיר yes",
+      "host": "192.0.2.1",
+      "mac": "02:00:00:00:00:01"
+    },
+    {
+      "id": "webos-192-0-2-2",
+      "kind": "webos",
+      "name": "טלוויזיית LG",
+      "host": "192.0.2.2",
+      "mac": "02:00:00:00:00:02"
+    },
+    {
+      "id": "androidtv-192-0-2-3",
+      "kind": "androidtv",
+      "name": "ממיר yes",
+      "host": "192.0.2.3",
+      "mac": "02:00:00:00:00:03"
+    }
+  ],
+  "apps": {},
+  "rooms": [
+    {
+      "id": "room-1",
+      "name": "סלון",
+      "displayId": "webos-192-0-2-2",
+      "sourceId": "androidtv-192-0-2-1"
+    }
+  ],
+  "certs": {
+    "androidtv-192-0-2-3": {
+      "cert": "-----BEGIN CERTIFICATE-----\nREDACTED\n-----END CERTIFICATE-----\n",
+      "key": "-----BEGIN PRIVATE KEY-----\nREDACTED\n-----END PRIVATE KEY-----\n"
+    }
+  }
+}

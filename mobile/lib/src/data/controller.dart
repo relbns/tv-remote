@@ -635,7 +635,8 @@ class RemoteController extends ChangeNotifier {
       await _store.saveCertificate(entry.key, entry.value);
       _paired.add(entry.key);
     }
-    await _store.setDefaultTab(backup.defaultTab);
+    final tab = backup.defaultTab;
+    if (tab != null) await _store.setDefaultTab(tab);
 
     devices = _store.devices();
     rooms = _store.rooms();
