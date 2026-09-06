@@ -312,6 +312,7 @@ class Channel {
     required this.name,
     this.color,
     this.watch,
+    this.stream,
   });
 
   final String number;
@@ -328,11 +329,21 @@ class Channel {
   /// Android hands the link to the broadcaster's app when it is installed.
   final String? watch;
 
+  /// A live HLS stream the broadcaster publishes openly — no token, no
+  /// encryption — which is why it can be played in the app itself.
+  ///
+  /// Present only where it was checked to belong to the broadcaster. Public
+  /// stream indexes carry mirrors of the commercial channels too, on hosts
+  /// that also serve paid channels; those are rebroadcasts, not feeds, and
+  /// this file does not link them.
+  final String? stream;
+
   Map<String, dynamic> toJson() => {
     'number': number,
     'name': name,
     if (color != null) 'color': color,
     if (watch != null) 'watch': watch,
+    if (stream != null) 'stream': stream,
   };
 
   factory Channel.fromJson(Map<String, dynamic> json) => Channel(
@@ -340,6 +351,7 @@ class Channel {
     name: '${json['name']}',
     color: json['color'] as String?,
     watch: json['watch'] as String?,
+    stream: json['stream'] as String?,
   );
 
   Channel copyWith({
@@ -347,11 +359,13 @@ class Channel {
     String? name,
     String? color,
     String? watch,
+    String? stream,
   }) => Channel(
     number: number ?? this.number,
     name: name ?? this.name,
     color: color ?? this.color,
     watch: watch ?? this.watch,
+    stream: stream ?? this.stream,
   );
 }
 

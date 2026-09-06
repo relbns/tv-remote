@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/controller.dart';
 import '../data/device.dart';
+import 'player_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
@@ -86,9 +87,10 @@ class _ChannelsPageState extends State<ChannelsPage> {
                     // needs no television at all — out of reach.
                     enabled: true,
                     onTap: () => _tune(channel.number),
-                    onWatch: channel.watch == null
+                    onWatch: channel.watch == null && channel.stream == null
                         ? null
-                        : () => _watch(channel),
+                        : () => _play(channel),
+                    playsHere: channel.stream != null,
                   ),
               ],
             ),
@@ -117,8 +119,18 @@ class _ChannelsPageState extends State<ChannelsPage> {
     },
   );
 
-  /// Open the broadcaster's live page. Android hands it to their app when it
-  /// is installed, so this is one action rather than two.
+  /// Play here when the broadcaster publishes an open stream; otherwise open
+  /// their page, which is the only honest option for a protected feed.
+  Future<void> _play(Channel channel) async {
+    if (channel.stream != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => PlayerPage(channel: channel)),
+      );
+      return;
+    }
+    await _watch(channel);
+  }
+
   Future<void> _watch(Channel channel) async {
     final uri = Uri.tryParse(channel.watch ?? '');
     if (uri == null) return;
@@ -144,6 +156,7 @@ class _ChannelTile extends StatelessWidget {
     required this.enabled,
     required this.onTap,
     required this.onWatch,
+    required this.playsHere,
   });
 
   final Channel channel;
@@ -153,6 +166,10 @@ class _ChannelTile extends StatelessWidget {
   /// Watching on the phone does not need the television, so this stays live
   /// even when nothing is connected.
   final VoidCallback? onWatch;
+
+  /// True when the stream plays inside the app rather than opening a browser —
+  /// worth showing, because the two are a different experience.
+  final bool playsHere;
 
   @override
   Widget build(BuildContext context) {
@@ -197,12 +214,14 @@ class _ChannelTile extends StatelessWidget {
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-              icon: const Icon(
-                Icons.play_circle_outline_rounded,
+              icon: Icon(
+                playsHere
+                    ? Icons.play_circle_fill_rounded
+                    : Icons.open_in_new_rounded,
                 size: 19,
-                color: Palette.inkDim,
+                color: playsHere ? Palette.amber : Palette.inkDim,
               ),
-              tooltip: 'צפייה בטלפון',
+              tooltip: playsHere ? 'צפייה כאן' : 'פתיחה באתר השדרן',
             ),
         ],
       ),

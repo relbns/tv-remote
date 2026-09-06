@@ -1,12 +1,13 @@
 {
-  "$comment": "אפיקי הערוצים הפתוחים בישראל. הערוצים המרכזיים ממותגים לפי המספר שלהם, ולכן האפיק זהה בין הספקים. 'watch' הוא עמוד השידור החי של השדרן עצמו — נפתח בדפדפן, ואנדרואיד מעביר אותו לאפליקציה הרשמית אם היא מותקנת. הרשימה כולה ניתנת לעריכה באפליקציה.",
+  "$comment": "אפיקי הערוצים הפתוחים בישראל. הערוצים המרכזיים ממותגים לפי המספר שלהם, ולכן האפיק זהה בין הספקים. 'watch' הוא עמוד השידור של השדרן, ו-'stream' הוא זרם HLS שהשדרן עצמו מפרסם בגלוי, בלי טוקן והצפנה — קיים רק היכן שנבדק שהוא באמת של השדרן. הרשימה ניתנת לעריכה באפליקציה.",
   "version": 1,
   "channels": [
     {
       "number": "11",
       "name": "כאן 11",
       "color": "#2E7FD1",
-      "watch": "https://www.kan.org.il/live/"
+      "watch": "https://www.kan.org.il/live/",
+      "stream": "https://kancdn.medonecdn.net/livehls/oil/kancdn-live/live/kan11/live.livx/playlist.m3u8"
     },
     {
       "number": "12",
@@ -24,7 +25,8 @@
       "number": "14",
       "name": "ערוץ 14",
       "color": "#2FA36B",
-      "watch": "https://now14.co.il/"
+      "watch": "https://now14.co.il/",
+      "stream": "https://r.il.cdn-redge.media/livehls/oil/ch14/live/ch14/live.livx/playlist.m3u8"
     },
     {
       "number": "15",
@@ -41,7 +43,8 @@
       "number": "33",
       "name": "מכאן 33",
       "color": "#C4603A",
-      "watch": "https://www.kan.org.il/live/"
+      "watch": "https://www.kan.org.il/live/",
+      "stream": "https://kancdn.medonecdn.net/livehls/oil/kancdn-live/live/makan/live.livx/playlist.m3u8"
     },
     {
       "number": "99",
