@@ -206,7 +206,9 @@ class RemoteController extends ChangeNotifier {
           clientKey: key,
         );
       case DeviceKind.tizen:
-        return false; // no driver here yet
+        final token = await _store.tizenToken(device.id);
+        if (token == null) return false;
+        session = TizenSession(device: device, shared: _shared, token: token);
     }
 
     _sessions[device.id] = session;
@@ -442,8 +444,22 @@ class RemoteController extends ChangeNotifier {
         await select(Target.forDevice(device));
 
       case DeviceKind.tizen:
+        final session = TizenSession(device: device, shared: _shared);
+        // The set shows its prompt on the first connection and answers with a
+        // token only once a person accepts, so the token is the confirmation.
+        final token = session.tokens.first;
+        try {
+          await session.connect();
+          await _store.saveTizenToken(
+            device.id,
+            await token.timeout(const Duration(seconds: 45)),
+          );
+          _paired.add(device.id);
+        } finally {
+          await session.close();
+        }
         _set(LinkState.idle, null);
-        throw UnsupportedDeviceException(device.kind);
+        await select(Target.forDevice(device));
     }
   }
 
@@ -598,13 +614,59 @@ class RemoteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Store one device's pairing, in whatever shape its protocol uses.
+  ///
+  /// The shape is checked rather than trusted: a backup is a file a person can
+  /// edit, and a half-written credential should be skipped, not saved.
+  Future<bool> _restoreCredential(
+    String deviceId,
+    Map<String, String> credential,
+  ) async {
+    final device = devices.where((d) => d.id == deviceId).firstOrNull;
+    if (device == null) return false;
+    switch (device.kind) {
+      case DeviceKind.androidtv:
+        final cert = credential['cert'];
+        final key = credential['key'];
+        if (cert == null || key == null) return false;
+        await _store.saveCertificate(
+          deviceId,
+          ClientCertificate(certificatePem: cert, privateKeyPem: key),
+        );
+        return true;
+      case DeviceKind.webos:
+        final key = credential['clientKey'];
+        if (key == null) return false;
+        await _store.saveWebosKey(deviceId, key);
+        return true;
+      case DeviceKind.tizen:
+        final token = credential['token'];
+        if (token == null) return false;
+        await _store.saveTizenToken(deviceId, token);
+        return true;
+    }
+  }
+
+  Future<Map<String, String>?> _credentialFor(Device device) async {
+    switch (device.kind) {
+      case DeviceKind.androidtv:
+        final certificate = await _store.certificate(device.id);
+        return certificate?.toJson();
+      case DeviceKind.webos:
+        final key = await _store.webosKey(device.id);
+        return key == null ? null : {'clientKey': key};
+      case DeviceKind.tizen:
+        final token = await _store.tizenToken(device.id);
+        return token == null ? null : {'token': token};
+    }
+  }
+
   Future<Backup> buildBackup({required bool includeCredentials}) async {
-    final certificates = <String, ClientCertificate>{};
+    final credentials = <String, Map<String, String>>{};
     if (includeCredentials) {
       for (final device in devices) {
-        final certificate = await _store.certificate(device.id);
-        if (certificate == null) continue;
-        certificates[device.id] = certificate;
+        final credential = await _credentialFor(device);
+        if (credential != null) credentials[device.id] = credential;
       }
     }
 
@@ -615,7 +677,7 @@ class RemoteController extends ChangeNotifier {
         for (final device in devices) device.id: ?_store.shortcuts(device.id),
       },
       defaultTab: _store.defaultTab,
-      certificates: certificates,
+      credentials: credentials,
     );
   }
 
@@ -631,9 +693,10 @@ class RemoteController extends ChangeNotifier {
     for (final entry in backup.shortcuts.entries) {
       await _store.saveShortcuts(entry.key, entry.value);
     }
-    for (final entry in backup.certificates.entries) {
-      await _store.saveCertificate(entry.key, entry.value);
-      _paired.add(entry.key);
+    for (final entry in backup.credentials.entries) {
+      if (await _restoreCredential(entry.key, entry.value)) {
+        _paired.add(entry.key);
+      }
     }
     final tab = backup.defaultTab;
     if (tab != null) await _store.setDefaultTab(tab);

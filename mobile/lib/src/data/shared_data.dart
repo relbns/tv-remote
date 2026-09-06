@@ -55,6 +55,9 @@ class SharedData {
   /// Command name to the button the webOS pointer socket expects.
   Map<String, String> get webosButtons => _plain(_keys['webos']['buttons']);
 
+  /// Command name to the Samsung remote key constant (e.g. KEY_VOLUP).
+  Map<String, String> get tizenKeys => _plain(_keys['tizen']);
+
   /// Command name to the SSAP endpoint that performs it.
   Map<String, String> get webosRequests => _plain(_keys['webos']['requests']);
 

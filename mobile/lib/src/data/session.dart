@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../protocol/androidtv/remote.dart';
 import '../protocol/certificate.dart';
+import '../protocol/tizen/tizen.dart';
 import '../protocol/webos/webos.dart';
 import '../proto/remotemessage.pbenum.dart';
 import 'device.dart';
@@ -198,6 +199,70 @@ class WebosSession implements DeviceSession {
     final button = _shared.webosButtons[command];
     if (button == null) throw UnsupportedCommand(command);
     return _client.button(button);
+  }
+
+  void _emit(RemoteState next) {
+    _state = next;
+    if (!_states.isClosed) _states.add(next);
+  }
+}
+
+/* ---------------- Samsung Tizen ---------------- */
+
+class TizenSession implements DeviceSession {
+  TizenSession({
+    required this.device,
+    required SharedData shared,
+    String? token,
+  }) : _shared = shared,
+       _client = TizenClient(host: device.host, token: token);
+
+  @override
+  final Device device;
+
+  final SharedData _shared;
+  final TizenClient _client;
+
+  final _states = StreamController<RemoteState>.broadcast();
+  RemoteState _state = const RemoteState();
+
+  /// Emits the token the television returns once its prompt is accepted.
+  Stream<String> get tokens => _client.tokens;
+
+  @override
+  Stream<RemoteState> get states => _states.stream;
+  @override
+  Stream<Object> get errors => _client.errors;
+  @override
+  Stream<void> get closed => _client.closed;
+  @override
+  RemoteState get state => _state;
+  @override
+  bool get isConnected => _client.isConnected;
+
+  @override
+  Set<String> get capabilities => {..._shared.tizenKeys.keys, 'text', 'launch'};
+
+  @override
+  Future<void> connect() async {
+    await _client.connect();
+    // The set answers nothing about its own state, so being connected is the
+    // only thing that can honestly be reported.
+    _emit(_state.copyWith(powered: true));
+  }
+
+  @override
+  Future<void> close() => _client.close();
+
+  @override
+  Future<void> send(String command, [Object? arg]) async {
+    if (command == 'text') return _client.sendText('${arg ?? ''}');
+    if (command == 'launch' || command == 'applink') {
+      return _client.launch('$arg');
+    }
+    final key = _shared.tizenKeys[command];
+    if (key == null) throw UnsupportedCommand(command);
+    _client.sendKey(key);
   }
 
   void _emit(RemoteState next) {

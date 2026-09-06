@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tv_remote/src/data/backup.dart';
+import 'package:tv_remote/src/data/device.dart';
 
 /// A backup only its author can read is not a transfer.
 ///
@@ -30,14 +31,22 @@ void main() {
 
       expect(backup.devices, hasLength(3));
       expect(backup.includesCredentials, isTrue);
+      // Each protocol proves itself differently, and all of them have to
+      // survive the trip — not only the one that happened to be paired.
+      final byKind = {
+        for (final device in backup.devices)
+          if (backup.credentials[device.id] != null)
+            device.kind: backup.credentials[device.id]!,
+      };
       expect(
-        backup.certificates.values.first.certificatePem,
+        byKind[DeviceKind.androidtv]?['cert'],
         contains('BEGIN CERTIFICATE'),
       );
       expect(
-        backup.certificates.values.first.privateKeyPem,
+        byKind[DeviceKind.androidtv]?['key'],
         contains('BEGIN PRIVATE KEY'),
       );
+      expect(byKind[DeviceKind.webos]?['clientKey'], isNotEmpty);
     });
 
     test('סט מגיע עם שני חצאיו', () {

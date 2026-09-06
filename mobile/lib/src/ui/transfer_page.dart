@@ -206,7 +206,7 @@ class _ExportView extends StatelessWidget {
           Text(
             '${backup.devices.length} מכשירים · '
             '${backup.shortcuts.values.fold(0, (n, list) => n + list.length)} קיצורים'
-            '${backup.includesCredentials ? " · ${backup.certificates.length} צימודים" : ""}',
+            '${backup.includesCredentials ? " · ${backup.credentials.length} צימודים" : ""}',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 11.5, color: Palette.inkDim),
           ),

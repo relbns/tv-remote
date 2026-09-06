@@ -43,11 +43,15 @@ export function build({ includeCredentials }) {
   if (rooms.length) backup.rooms = rooms
 
   if (includeCredentials) {
+    // Each protocol proves itself differently — Android TV with a certificate
+    // and key, LG with a client key, Samsung with a token — so the entry is
+    // whatever that device's protocol uses, and the reader dispatches on kind.
     const certs = {}
-    for (const device of devices) {
-      if (device.creds?.cert && device.creds?.key) {
-        certs[device.id] = { cert: device.creds.cert, key: device.creds.key }
-      }
+    for (const { id, creds } of devices) {
+      if (!creds) continue
+      if (creds.cert && creds.key) certs[id] = { cert: creds.cert, key: creds.key }
+      else if (creds.clientKey) certs[id] = { clientKey: creds.clientKey }
+      else if (creds.token) certs[id] = { token: creds.token }
     }
     if (Object.keys(certs).length) backup.certs = certs
   }

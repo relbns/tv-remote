@@ -36,6 +36,9 @@
     "androidtv-192-0-2-3": {
       "cert": "-----BEGIN CERTIFICATE-----\nREDACTED\n-----END CERTIFICATE-----\n",
       "key": "-----BEGIN PRIVATE KEY-----\nREDACTED\n-----END PRIVATE KEY-----\n"
+    },
+    "webos-192-0-2-2": {
+      "clientKey": "0123456789abcdef0123456789abcdef"
     }
   }
 }

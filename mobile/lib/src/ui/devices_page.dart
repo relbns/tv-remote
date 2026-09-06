@@ -52,7 +52,6 @@ class _DevicesPageState extends State<DevicesPage> {
           device: device,
           paired: c.isPaired(device),
           connected: c.isDeviceConnected(device.id),
-          supported: device.kind != DeviceKind.tizen,
           selected: c.current?.devices.any((d) => d.id == device.id) ?? false,
           onSelect: () =>
               c.select(c.targetFor(device.id) ?? Target.forDevice(device)),
@@ -246,7 +245,6 @@ class _DeviceRow extends StatelessWidget {
     required this.device,
     required this.paired,
     required this.connected,
-    required this.supported,
     required this.selected,
     required this.onSelect,
     required this.onPair,
@@ -261,7 +259,6 @@ class _DeviceRow extends StatelessWidget {
   final bool connected;
 
   /// Whether this platform has a driver for the device's protocol.
-  final bool supported;
   final bool selected;
   final VoidCallback onSelect;
   final VoidCallback onPair;
@@ -323,10 +320,8 @@ class _DeviceRow extends StatelessWidget {
               child: Text(
                 // A device whose protocol has no driver here must not offer a
                 // button that can only fail.
-                supported ? 'צמד' : 'בקרוב',
-                style: TextStyle(
-                  color: supported ? Palette.amber : Palette.inkDim,
-                ),
+                'צמד',
+                style: TextStyle(color: Palette.amber),
               ),
             ),
           IconButton(

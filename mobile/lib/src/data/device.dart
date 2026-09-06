@@ -186,11 +186,19 @@ class DeviceStore {
   Future<void> saveWebosKey(String deviceId, String key) =>
       _secure.write(key: 'webos.$deviceId', value: key);
 
+  /// Samsung issues a token, again the same role and the same place.
+  Future<String?> tizenToken(String deviceId) =>
+      _secure.read(key: 'tizen.$deviceId');
+
+  Future<void> saveTizenToken(String deviceId, String token) =>
+      _secure.write(key: 'tizen.$deviceId', value: token);
+
   /// Whatever credential this device's protocol uses.
-  Future<bool> hasCredential(Device device) async =>
-      device.kind == DeviceKind.androidtv
-      ? await certificate(device.id) != null
-      : await webosKey(device.id) != null;
+  Future<bool> hasCredential(Device device) async => switch (device.kind) {
+    DeviceKind.androidtv => await certificate(device.id) != null,
+    DeviceKind.webos => await webosKey(device.id) != null,
+    DeviceKind.tizen => await tizenToken(device.id) != null,
+  };
 
   /* ---------------- rooms ---------------- */
 

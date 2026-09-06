@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../protocol/certificate.dart';
 import 'device.dart';
 
 /// Moving a setup to another phone.
@@ -19,7 +18,7 @@ class Backup {
     required this.shortcuts,
     this.defaultTab,
     this.rooms = const [],
-    this.certificates = const {},
+    this.credentials = const {},
   });
 
   final List<Device> devices;
@@ -36,10 +35,16 @@ class Backup {
   /// receiving device's own choice alone rather than reset it.
   final int? defaultTab;
 
-  /// Pairing certificates, keyed by device id. Empty for a settings-only backup.
-  final Map<String, ClientCertificate> certificates;
+  /// Pairings, keyed by device id. Empty for a settings-only backup.
+  ///
+  /// Each protocol proves itself differently — Android TV with a certificate
+  /// and key, LG with a client key, Samsung with a token — so the value is the
+  /// raw shape that protocol uses, and the reader dispatches on the device's
+  /// kind. Keeping one map rather than three means a new protocol does not
+  /// change the file format.
+  final Map<String, Map<String, String>> credentials;
 
-  bool get includesCredentials => certificates.isNotEmpty;
+  bool get includesCredentials => credentials.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
     'v': formatVersion,
@@ -50,11 +55,7 @@ class Backup {
         entry.key: [for (final app in entry.value) app.toJson()],
     },
     if (defaultTab != null) 'defaultTab': defaultTab,
-    if (certificates.isNotEmpty)
-      'certs': {
-        for (final entry in certificates.entries)
-          entry.key: entry.value.toJson(),
-      },
+    if (credentials.isNotEmpty) 'certs': credentials,
   };
 
   factory Backup.fromJson(Map<String, dynamic> json) {
@@ -82,11 +83,12 @@ class Backup {
           ],
       },
       defaultTab: json['defaultTab'] as int?,
-      certificates: {
+      credentials: {
         for (final entry in (json['certs'] as Map? ?? const {}).entries)
-          entry.key as String: ClientCertificate.fromJson(
-            entry.value as Map<String, dynamic>,
-          ),
+          entry.key as String: {
+            for (final field in (entry.value as Map).entries)
+              '${field.key}': '${field.value}',
+          },
       },
     );
   }
