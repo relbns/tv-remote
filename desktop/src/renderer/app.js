@@ -68,12 +68,29 @@ function toast(message, kind = "error") {
   toastTimer = setTimeout(() => (el.toast.hidden = true), 4200)
 }
 
+/** Turn a failure into something worth reading.
+ *
+ * A raw error names a socket and an errno, which tells the person nothing they
+ * can act on. Messages the drivers wrote in Hebrew are already meant for a
+ * person and pass through untouched.
+ */
+function describeFailure(message = "") {
+  if (/ECONNREFUSED|EHOSTUNREACH|ENETUNREACH|ETIMEDOUT|ECONNRESET|EPIPE/.test(message)) {
+    return "אין קשר עם המכשיר — ודא שהוא דלוק ועל אותה רשת"
+  }
+  if (/certificate|handshake|SSL|TLS/i.test(message)) {
+    return "החיבור המאובטח נכשל. אם המכשיר אופס, הסר אותו וצמד מחדש"
+  }
+  if (/timed? ?out/i.test(message)) return "המכשיר לא הגיב בזמן"
+  return /[\u0590-\u05FF]/.test(message) ? message : "משהו השתבש. נסה שוב"
+}
+
 async function guard(promise, infoMessage) {
   try {
     if (infoMessage) toast(infoMessage, "info")
     return await promise
   } catch (err) {
-    toast(err.message)
+    toast(describeFailure(err.message))
   }
 }
 

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
 import '../protocol/androidtv/pairing.dart';
+import '../protocol/tizen/tizen.dart';
 import '../protocol/androidtv/remote.dart';
 import '../protocol/certificate.dart';
 import 'backup.dart';
@@ -16,6 +18,28 @@ import 'updates.dart';
 enum LinkState { idle, connecting, connected, pairing, failed }
 
 /// Raised when a device's protocol is not implemented on this platform yet.
+/// Turn a failure into something worth reading.
+///
+/// Raw exception text names a socket and an errno; it tells the person holding
+/// the phone nothing they can act on. These messages say what to try instead.
+String describeFailure(Object failure) {
+  if (failure is SocketException) {
+    return 'אין קשר עם המכשיר — ודא שאתה על אותה רשת Wi-Fi והמכשיר דלוק';
+  }
+  if (failure is HandshakeException) {
+    return 'החיבור המאובטח נכשל. אם המכשיר אופס, הסר אותו וצמד מחדש';
+  }
+  if (failure is TimeoutException) return 'המכשיר לא הגיב בזמן';
+  if (failure is UnsupportedCommand ||
+      failure is UnsupportedDeviceException ||
+      failure is AndroidTvPairingException ||
+      failure is TizenException ||
+      failure is BackupException) {
+    return '$failure';
+  }
+  return 'משהו השתבש. נסה שוב';
+}
+
 class UnsupportedDeviceException implements Exception {
   const UnsupportedDeviceException(this.kind);
   final DeviceKind kind;
@@ -215,16 +239,20 @@ class RemoteController extends ChangeNotifier {
     _subs[device.id] = [
       session.states.listen((_) => _onState(device)),
       session.closed.listen((_) => _onClosed(device)),
-      session.errors.listen((e) => _set(link, '$e')),
+      // Same reasoning: a socket that drops is reported by the connection
+      // state, not by a message the user has to dismiss.
+      session.errors.listen((_) {}),
     ];
 
     try {
       await session.connect();
       notifyListeners();
       return true;
-    } on Object catch (failure) {
+    } on Object {
+      // Not being able to reach a saved device is ordinary — it is switched
+      // off, or you are not at home. The dot already says so, and a message
+      // about it would fire on every launch away from the house.
       await _closeSession(device.id);
-      error = '$failure';
       return false;
     }
   }
@@ -298,7 +326,7 @@ class RemoteController extends ChangeNotifier {
         await session.send(command, arg);
         return;
       } on Object catch (failure) {
-        _set(link, '$failure');
+        _set(link, describeFailure(failure));
         return;
       }
     }
@@ -328,7 +356,7 @@ class RemoteController extends ChangeNotifier {
       try {
         await session.send(command);
       } on Object catch (failure) {
-        _set(link, '$failure');
+        _set(link, describeFailure(failure));
       }
     }
   }
@@ -420,7 +448,7 @@ class RemoteController extends ChangeNotifier {
           await pairing.begin();
         } on Object catch (failure) {
           _pairing = null;
-          _set(LinkState.failed, '$failure');
+          _set(LinkState.failed, describeFailure(failure));
           rethrow;
         }
 
