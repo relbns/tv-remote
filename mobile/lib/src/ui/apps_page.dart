@@ -135,9 +135,7 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = color == null
-        ? Palette.surfaceHigh
-        : Color(int.parse(color!.replaceFirst('#', 'ff'), radix: 16));
+    final value = parseColor(color) ?? Palette.surfaceHigh;
     return Container(
       width: 38,
       height: 38,

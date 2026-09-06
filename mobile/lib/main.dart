@@ -9,6 +9,7 @@ import 'src/data/controller.dart';
 import 'src/data/device.dart';
 import 'src/data/shared_data.dart';
 import 'src/ui/apps_page.dart';
+import 'src/ui/channels_page.dart';
 import 'src/ui/devices_page.dart';
 import 'src/ui/remote_page.dart';
 import 'src/ui/theme.dart';
@@ -132,6 +133,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             index: _tab,
             children: [
               RemotePage(controller: widget.controller),
+              ChannelsPage(controller: widget.controller),
               AppsPage(controller: widget.controller),
               DevicesPage(controller: widget.controller),
             ],
@@ -153,6 +155,7 @@ class _TabBar extends StatelessWidget {
 
   static const _items = [
     (Icons.settings_remote_rounded, 'שלט'),
+    (Icons.dialpad_rounded, 'ערוצים'),
     (Icons.apps_rounded, 'אפליקציות'),
     (Icons.tv_rounded, 'מכשירים'),
   ];

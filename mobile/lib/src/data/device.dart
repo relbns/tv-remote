@@ -202,6 +202,27 @@ class DeviceStore {
 
   /* ---------------- rooms ---------------- */
 
+  static const _channelsKey = 'channels';
+
+  /// null until the user has edited the list, which is how the seed stays
+  /// current: an untouched installation follows the shared file rather than a
+  /// copy frozen at first launch.
+  List<Channel>? channels() {
+    final raw = _prefs.getString(_channelsKey);
+    if (raw == null) return null;
+    return [
+      for (final entry in jsonDecode(raw) as List)
+        Channel.fromJson(entry as Map<String, dynamic>),
+    ];
+  }
+
+  Future<void> saveChannels(List<Channel> channels) => _prefs.setString(
+    _channelsKey,
+    jsonEncode([for (final channel in channels) channel.toJson()]),
+  );
+
+  Future<void> resetChannels() => _prefs.remove(_channelsKey);
+
   static const _roomsKey = 'rooms';
 
   List<Room> rooms() {
@@ -239,6 +260,19 @@ class DeviceStore {
   int get defaultTab => _prefs.getInt('defaultTab') ?? 0;
   Future<void> setDefaultTab(int index) => _prefs.setInt('defaultTab', index);
 
+  /// The channels tab was inserted second, which shifted every tab after it.
+  ///
+  /// A stored index is a position, not a name, so without this someone who
+  /// chose "devices" would silently start landing on "apps". Runs once.
+  Future<void> migrateTabIndices() async {
+    if (_prefs.getBool('tabsV2') ?? false) return;
+    final stored = _prefs.getInt('defaultTab');
+    if (stored != null && stored >= 1) {
+      await _prefs.setInt('defaultTab', stored + 1);
+    }
+    await _prefs.setBool('tabsV2', true);
+  }
+
   /// Where volume, power and input should go in a set.
   ///
   /// 'auto' follows the shared routing table — screen first. Some setups work
@@ -267,6 +301,60 @@ class DeviceStore {
 
 /// A saved app shortcut. Mirrors the shared catalogue's shape so a learned
 /// package and a catalogue entry are stored the same way.
+/// A channel on the tuner, addressed by the number you would key in.
+///
+/// Israel's main channels are branded by their number, so the number is the
+/// same on every provider. The list is still editable, because a household on
+/// a different provider or a set with its own ordering can disagree.
+class Channel {
+  const Channel({
+    required this.number,
+    required this.name,
+    this.color,
+    this.watch,
+  });
+
+  final String number;
+  final String name;
+
+  /// `#RRGGBB`, used to tell the tiles apart at a glance.
+  final String? color;
+
+  /// The broadcaster's own live page.
+  ///
+  /// These channels are free to air, and their broadcasters stream them
+  /// publicly — so watching on the phone means opening their player, not
+  /// pulling video off the box, which the remote protocol cannot do anyway.
+  /// Android hands the link to the broadcaster's app when it is installed.
+  final String? watch;
+
+  Map<String, dynamic> toJson() => {
+    'number': number,
+    'name': name,
+    if (color != null) 'color': color,
+    if (watch != null) 'watch': watch,
+  };
+
+  factory Channel.fromJson(Map<String, dynamic> json) => Channel(
+    number: '${json['number']}',
+    name: '${json['name']}',
+    color: json['color'] as String?,
+    watch: json['watch'] as String?,
+  );
+
+  Channel copyWith({
+    String? number,
+    String? name,
+    String? color,
+    String? watch,
+  }) => Channel(
+    number: number ?? this.number,
+    name: name ?? this.name,
+    color: color ?? this.color,
+    watch: watch ?? this.watch,
+  );
+}
+
 class AppEntry {
   const AppEntry({
     required this.label,

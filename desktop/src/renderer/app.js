@@ -22,7 +22,7 @@ const el = {
 
 const VIEWS = [
   "remote-view", "pair-view", "apps-view", "settings-view",
-  "help-view", "about-view", "transfer-view",
+  "help-view", "about-view", "transfer-view", "channels-view",
 ]
 
 let snapshot = { targets: [], devices: [], rooms: [] }
@@ -672,4 +672,121 @@ $("#import-paste").onclick = async () => {
   } catch (err) {
     transferNote(err.message)
   }
+}
+
+
+/* ---------------- channels ---------------- */
+
+let typed = ""
+
+function paintReadout() {
+  el2.readout.textContent = typed || "—"
+  el2.readout.classList.toggle("filled", Boolean(typed))
+}
+
+const el2 = {
+  grid: $("#channel-grid"),
+  keypad: $("#keypad"),
+  readout: $("#keypad-readout"),
+  note: $("#channels-note"),
+}
+
+/** Key in a number, digit by digit, then confirm.
+ *
+ * None of these protocols has a "go to channel" message — a remote presses
+ * digits, and so does this. Boxes drop digits sent back to back, hence the gap.
+ */
+async function tuneTo(number) {
+  const t = current()
+  if (!t) return
+  for (const digit of String(number)) {
+    if (digit < "0" || digit > "9") continue
+    await guard(window.tv.send(t.id, `num${digit}`))
+    await new Promise((r) => setTimeout(r, 140))
+  }
+  if (new Set(t.capabilities ?? []).has("enter")) {
+    await guard(window.tv.send(t.id, "enter"))
+  }
+  typed = ""
+  paintReadout()
+}
+
+async function renderChannels() {
+  const channels = await window.tv.channels()
+  const connected = Boolean(current()?.status.connected)
+
+  el2.grid.innerHTML = ""
+  for (const channel of channels) {
+    const tint = channel.color ?? "#E9A93F"
+    const button = document.createElement("button")
+    button.className = "channel"
+    button.disabled = !connected
+
+    // Set through the CSSOM, not a style attribute: the page runs under a
+    // strict Content-Security-Policy, which blocks inline styles in markup and
+    // would silently drop every colour.
+    const num = document.createElement("span")
+    num.className = "num"
+    num.textContent = channel.number
+    num.style.color = tint
+    num.style.backgroundColor = `${tint}2E`
+
+    const name = document.createElement("span")
+    name.className = "name"
+    name.textContent = channel.name
+
+    button.append(num, name)
+    button.onclick = () => tuneTo(channel.number)
+    el2.grid.append(button)
+  }
+
+  el2.keypad.innerHTML = ""
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "↵"]
+  for (const label of keys) {
+    const button = document.createElement("button")
+    button.textContent = label
+    button.disabled = !connected
+    if (label === "C") button.className = "dim"
+    if (label === "↵") button.className = "accent"
+    button.onclick = () => {
+      if (label === "C") typed = ""
+      else if (label === "↵") { if (typed) tuneTo(typed); return }
+      else if (typed.length < 4) typed += label
+      paintReadout()
+    }
+    el2.keypad.append(button)
+  }
+  paintReadout()
+}
+
+$("#channels-btn").onclick = () => {
+  typed = ""
+  el2.note.textContent = ""
+  showView("channels-view")
+  renderChannels()
+}
+
+$("#channels-edit").onclick = async () => {
+  const channels = await window.tv.channels()
+  const text = channels.map((c) => `${c.number} ${c.name}`).join("\n")
+  const edited = prompt(
+    "ערוץ בכל שורה: אפיק, רווח, ושם.\nריק = חזרה לרשימת ברירת המחדל.",
+    text,
+  )
+  if (edited === null) return
+
+  if (!edited.trim()) {
+    await window.tv.resetChannels()
+  } else {
+    const parsed = []
+    for (const line of edited.split("\n")) {
+      const match = line.trim().match(/^(\d{1,4})\s+(.+)$/)
+      if (!match) continue
+      const previous = channels.find((c) => c.number === match[1])
+      parsed.push({ number: match[1], name: match[2].trim(), color: previous?.color })
+    }
+    if (!parsed.length) return void (el2.note.textContent = "לא זוהה אף ערוץ תקין")
+    await window.tv.saveChannels(parsed)
+  }
+  await renderChannels()
 }

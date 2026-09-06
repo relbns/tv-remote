@@ -143,6 +143,7 @@ class RemoteController extends ChangeNotifier {
   /* ---------------- lifecycle ---------------- */
 
   Future<void> load() async {
+    await _store.migrateTabIndices();
     // The socket does not survive the screen going off: Android suspends the
     // app and the box drops the session when its pings go unanswered. Coming
     // back to the foreground is the moment to rebuild it.
@@ -539,6 +540,39 @@ class RemoteController extends ChangeNotifier {
   void forgetFound(Discovered device) {
     found.remove(device);
     notifyListeners();
+  }
+
+  /* ---------------- channels ---------------- */
+
+  /// The channel list: the user's, if they have edited it, otherwise the seed.
+  List<Channel> get channels =>
+      _store.channels() ??
+      [for (final entry in _shared.channelSeed) Channel.fromJson(entry)];
+
+  bool get channelsAreCustom => _store.channels() != null;
+
+  Future<void> saveChannels(List<Channel> next) async {
+    await _store.saveChannels(next);
+    notifyListeners();
+  }
+
+  Future<void> resetChannels() async {
+    await _store.resetChannels();
+    notifyListeners();
+  }
+
+  /// Key in a channel number, digit by digit, then confirm.
+  ///
+  /// There is no "go to channel" message in any of these protocols — a remote
+  /// presses digits, and so does this.
+  Future<void> tuneTo(String number) async {
+    for (final digit in number.trim().split('')) {
+      if (int.tryParse(digit) == null) continue;
+      await send('num$digit');
+      // Boxes drop digits sent back to back; this is the gap a thumb leaves.
+      await Future<void>.delayed(const Duration(milliseconds: 140));
+    }
+    if (capabilities.contains('enter')) await send('enter');
   }
 
   /* ---------------- shortcuts ---------------- */

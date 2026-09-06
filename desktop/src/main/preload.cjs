@@ -36,6 +36,11 @@ contextBridge.exposeInMainWorld("tv", {
   info: () => call("app:info"),
   help: () => call("app:help"),
 
+  channels: () => call("channels:list"),
+  channelsAreCustom: () => call("channels:custom"),
+  saveChannels: (channels) => call("channels:save", channels),
+  resetChannels: () => call("channels:reset"),
+
   backupPreview: (withCreds) => call("backup:preview", withCreds),
   backupSave: (withCreds) => call("backup:save", withCreds),
   backupLoad: () => call("backup:load"),

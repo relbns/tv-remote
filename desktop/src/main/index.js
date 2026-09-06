@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import { hub } from "./hub.js"
 import * as store from "./store.js"
-import { HELP } from "./shared.js"
+import { HELP, CHANNELS } from "./shared.js"
 import { checkForUpdate } from "./updates.js"
 import * as backup from "./backup.js"
 
@@ -160,6 +160,14 @@ function registerIpc() {
   handle("window:hide", () => hideWindow())
   handle("app:info", () => appInfo())
   handle("app:help", () => HELP.sections)
+
+  handle("channels:list", () => store.getChannels() ?? CHANNELS.channels)
+  handle("channels:custom", () => store.getChannels() !== null)
+  handle("channels:save", (channels) => store.setChannels(channels))
+  handle("channels:reset", () => {
+    store.resetChannels()
+    return CHANNELS.channels
+  })
 
   handle("backup:preview", async (includeCredentials) => {
     const data = backup.build({ includeCredentials })

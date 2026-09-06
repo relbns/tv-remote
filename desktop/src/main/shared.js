@@ -17,3 +17,4 @@ export const plain = (obj) =>
 export const KEYS = read("keys.json")
 export const APPS = read("apps.json")
 export const HELP = read("help.json")
+export const CHANNELS = read("channels.json")

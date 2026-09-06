@@ -8,7 +8,7 @@ import 'transfer_page.dart';
 import 'theme.dart';
 import 'widgets/controls.dart';
 
-const tabNames = ['שלט', 'אפליקציות', 'מכשירים'];
+const tabNames = ['שלט', 'ערוצים', 'אפליקציות', 'מכשירים'];
 
 Future<void> showSettingsSheet(
   BuildContext context,

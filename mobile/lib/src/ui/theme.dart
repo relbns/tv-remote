@@ -24,6 +24,18 @@ abstract final class Palette {
   static const dead = Color(0xFFDE5B57);
 }
 
+/// Parse a `#RRGGBB` string from the shared data files.
+///
+/// Returns null rather than throwing: the colour is decoration, and a typo in
+/// an editable list should not take a screen down with it.
+Color? parseColor(String? value) {
+  if (value == null) return null;
+  final hex = value.replaceFirst('#', '');
+  if (hex.length != 6) return null;
+  final parsed = int.tryParse(hex, radix: 16);
+  return parsed == null ? null : Color(0xFF000000 | parsed);
+}
+
 abstract final class Radii {
   static const sm = 14.0;
   static const md = 20.0;

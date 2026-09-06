@@ -7,11 +7,12 @@ import 'package:flutter/services.dart';
 /// `tool/sync_shared.sh` copies these in from the repository's `shared/`
 /// directory before a build, so a mapping cannot drift between platforms.
 class SharedData {
-  SharedData._(this._keys, this._apps, this._help);
+  SharedData._(this._keys, this._apps, this._help, this._channels);
 
   final Map<String, dynamic> _keys;
   final Map<String, dynamic> _apps;
   final Map<String, dynamic> _help;
+  final Map<String, dynamic> _channels;
 
   static SharedData? _instance;
   static SharedData get instance {
@@ -30,12 +31,22 @@ class SharedData {
     final help = jsonDecode(
       await rootBundle.loadString('assets/shared/help.json'),
     );
+    final channels = jsonDecode(
+      await rootBundle.loadString('assets/shared/channels.json'),
+    );
     return _instance = SharedData._(
       keys as Map<String, dynamic>,
       apps as Map<String, dynamic>,
       help as Map<String, dynamic>,
+      channels as Map<String, dynamic>,
     );
   }
+
+  /// The starting channel list, before the user edits it.
+  List<Map<String, dynamic>> get channelSeed => [
+    for (final channel in _channels['channels'] as List)
+      (channel as Map).cast<String, dynamic>(),
+  ];
 
   /// Help sections that apply to this platform, in the order they should show.
   List<Map<String, dynamic>> get helpSections => [

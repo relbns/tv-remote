@@ -1,0 +1,53 @@
+{
+  "$comment": "אפיקי הערוצים הפתוחים בישראל. הערוצים המרכזיים ממותגים לפי המספר שלהם, ולכן האפיק זהה בין הספקים. 'watch' הוא עמוד השידור החי של השדרן עצמו — נפתח בדפדפן, ואנדרואיד מעביר אותו לאפליקציה הרשמית אם היא מותקנת. הרשימה כולה ניתנת לעריכה באפליקציה.",
+  "version": 1,
+  "channels": [
+    {
+      "number": "11",
+      "name": "כאן 11",
+      "color": "#2E7FD1",
+      "watch": "https://www.kan.org.il/live/"
+    },
+    {
+      "number": "12",
+      "name": "קשת 12",
+      "color": "#E4453F",
+      "watch": "https://www.mako.co.il/mako-vod-live-tv/VOD-6540b8dcb64fd31006.htm"
+    },
+    {
+      "number": "13",
+      "name": "רשת 13",
+      "color": "#F0A020",
+      "watch": "https://13tv.co.il/livestream/"
+    },
+    {
+      "number": "14",
+      "name": "ערוץ 14",
+      "color": "#2FA36B",
+      "watch": "https://now14.co.il/"
+    },
+    {
+      "number": "15",
+      "name": "ערוץ 15",
+      "color": "#8B62D6"
+    },
+    {
+      "number": "23",
+      "name": "כאן חינוכית",
+      "color": "#3AA9C4",
+      "watch": "https://www.kan.org.il/live/"
+    },
+    {
+      "number": "33",
+      "name": "מכאן 33",
+      "color": "#C4603A",
+      "watch": "https://www.kan.org.il/live/"
+    },
+    {
+      "number": "99",
+      "name": "ערוץ הכנסת",
+      "color": "#6B7280",
+      "watch": "https://main.knesset.gov.il/"
+    }
+  ]
+}

@@ -183,6 +183,23 @@ export function removeApp(deviceId, launch) {
 
 /* ---------------- settings ---------------- */
 
+/** null until the user edits the list, so an untouched install follows the
+ *  shared seed rather than a copy frozen at first launch. */
+export const getChannels = () => load().channels ?? null
+
+export function setChannels(channels) {
+  const state = load()
+  state.channels = channels
+  persist()
+  return state.channels
+}
+
+export function resetChannels() {
+  const state = load()
+  delete state.channels
+  persist()
+}
+
 export const getSettings = () => load().settings
 
 export function setSetting(key, value) {
