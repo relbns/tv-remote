@@ -202,6 +202,16 @@ class DeviceStore {
 
   /* ---------------- rooms ---------------- */
 
+  /// The app a box has to be inside for a channel number to mean anything.
+  ///
+  /// Stored per device, because it is the television app of whichever provider
+  /// that box belongs to.
+  String? channelApp(String deviceId) =>
+      _prefs.getString('channelApp.$deviceId');
+
+  Future<void> saveChannelApp(String deviceId, String launch) =>
+      _prefs.setString('channelApp.$deviceId', launch);
+
   static const _channelsKey = 'channels';
 
   /// null until the user has edited the list, which is how the seed stays

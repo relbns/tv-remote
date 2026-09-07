@@ -561,11 +561,55 @@ class RemoteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Launchers, where a channel number means nothing at all.
+  static const _launchers = {
+    'com.google.android.tvlauncher',
+    'com.google.android.apps.tv.launcherx',
+    'com.android.tv.launcher',
+  };
+
+  /// The app this target must be inside for a channel number to mean anything.
+  String? get channelApp {
+    final source = current?.source ?? current?.display;
+    return source == null ? null : _store.channelApp(source.id);
+  }
+
+  Future<void> setChannelApp(String launch) async {
+    final source = current?.source ?? current?.display;
+    if (source == null) return;
+    await _store.saveChannelApp(source.id, launch);
+    notifyListeners();
+  }
+
+  /// Whether the box is somewhere a channel number will be understood.
+  bool get canTune {
+    final app = deviceState.currentApp;
+    return app == null || !_launchers.contains(app);
+  }
+
   /// Key in a channel number, digit by digit, then confirm.
   ///
   /// There is no "go to channel" message in any of these protocols — a remote
-  /// presses digits, and so does this.
+  /// presses digits, and so does this. But digits only mean a channel inside a
+  /// television app: on the home screen they do nothing, the focus stays on
+  /// whatever tile it was on, and the confirm at the end opens that instead —
+  /// which is how pressing "14" once launched YouTube.
   Future<void> tuneTo(String number) async {
+    if (!canTune) {
+      final app = channelApp;
+      if (app == null) {
+        _set(
+          link,
+          'הממיר במסך הבית — פתח את אפליקציית הטלוויזיה, או בחר '
+          'אותה פעם אחת ב"עריכה" כדי שהמעבר יעשה זאת לבד',
+        );
+        return;
+      }
+      await send('applink', app);
+      // Give the app time to take the screen before the digits arrive.
+      await Future<void>.delayed(const Duration(milliseconds: 2500));
+    }
+
     for (final digit in number.trim().split('')) {
       if (int.tryParse(digit) == null) continue;
       await send('num$digit');

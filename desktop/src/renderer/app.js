@@ -691,14 +691,32 @@ const el2 = {
   note: $("#channels-note"),
 }
 
+// Launchers, where a channel number means nothing at all.
+const LAUNCHERS = new Set([
+  "com.google.android.tvlauncher",
+  "com.google.android.apps.tv.launcherx",
+  "com.android.tv.launcher",
+])
+
 /** Key in a number, digit by digit, then confirm.
  *
  * None of these protocols has a "go to channel" message — a remote presses
  * digits, and so does this. Boxes drop digits sent back to back, hence the gap.
+ *
+ * Digits only mean a channel inside a television app. On the home screen they
+ * do nothing, the focus stays on whatever tile it was on, and the confirm at
+ * the end opens that instead — which is how pressing "14" once launched
+ * YouTube. So refuse rather than fire blind.
  */
 async function tuneTo(number) {
   const t = current()
   if (!t) return
+  if (LAUNCHERS.has(t.status.currentApp)) {
+    el2.note.textContent =
+      "הממיר במסך הבית — פתח קודם את אפליקציית הטלוויזיה, שם מספר ערוץ נקלט."
+    return
+  }
+  el2.note.textContent = ""
   for (const digit of String(number)) {
     if (digit < "0" || digit > "9") continue
     await guard(window.tv.send(t.id, `num${digit}`))

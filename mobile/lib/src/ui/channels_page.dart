@@ -61,6 +61,8 @@ class _ChannelsPageState extends State<ChannelsPage> {
             ],
           ),
           const SizedBox(height: 4),
+          _TuningApp(controller: c),
+          const SizedBox(height: 10),
           if (channels.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 28),
@@ -528,4 +530,124 @@ class _EditChannelsPageState extends State<_EditChannelsPage> {
     });
     await _save();
   }
+}
+
+/// Which app the box must be inside for a channel number to mean anything.
+///
+/// Offered rather than assumed: it is the television app of whichever provider
+/// that box belongs to, and the app the box is showing right now is almost
+/// always the right answer — so choosing it is one tap, made while looking at
+/// the thing being chosen.
+class _TuningApp extends StatelessWidget {
+  const _TuningApp({required this.controller});
+  final RemoteController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final chosen = controller.channelApp;
+    final running = controller.deviceState.currentApp;
+    final shortcuts = controller.shortcuts();
+
+    if (chosen != null) {
+      final label = shortcuts
+          .where((app) => app.launch == chosen)
+          .map((app) => app.label)
+          .firstOrNull;
+      return _Note(
+        'מעבר לערוץ יפתח קודם את ${label ?? 'אפליקציית הטלוויזיה'}',
+        action: 'שנה',
+        onTap: () => _choose(context),
+      );
+    }
+
+    if (controller.canTune && running != null) {
+      return _Note(
+        'הממיר נמצא כעת באפליקציה שמנגנת — אפשר לקבע אותה כאפליקציית הערוצים',
+        action: 'קבע',
+        onTap: () => controller.setChannelApp(running),
+      );
+    }
+
+    return const _Note(
+      'מספר ערוץ נקלט רק בתוך אפליקציית הטלוויזיה. פתח אותה, ואז אפשר לקבע '
+      'אותה כאן פעם אחת.',
+    );
+  }
+
+  Future<void> _choose(BuildContext context) async {
+    final shortcuts = controller.shortcuts();
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Palette.surface,
+      useSafeArea: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'אפליקציית הערוצים',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            for (final app in shortcuts)
+              ListTile(
+                title: Text(app.label, style: const TextStyle(fontSize: 13)),
+                onTap: () => Navigator.pop(context, app.launch),
+              ),
+            if (shortcuts.isEmpty)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
+                child: Text(
+                  'אין עדיין קיצורים שמורים. שמור את אפליקציית הטלוויזיה '
+                  'בלשונית האפליקציות, והיא תופיע כאן.',
+                  style: TextStyle(color: Palette.inkDim, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) await controller.setChannelApp(picked);
+  }
+}
+
+class _Note extends StatelessWidget {
+  const _Note(this.text, {this.action, this.onTap});
+  final String text;
+  final String? action;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+    decoration: BoxDecoration(
+      color: Palette.surface,
+      borderRadius: BorderRadius.circular(Radii.sm),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11.5,
+              height: 1.5,
+              color: Palette.inkDim,
+            ),
+          ),
+        ),
+        if (action != null)
+          TextButton(
+            onPressed: onTap,
+            child: Text(
+              action!,
+              style: const TextStyle(fontSize: 12, color: Palette.amber),
+            ),
+          ),
+      ],
+    ),
+  );
 }
