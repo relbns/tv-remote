@@ -8,6 +8,7 @@ import '../protocol/androidtv/remote.dart';
 import '../data/updates.dart';
 import 'rooms_page.dart';
 import 'theme.dart';
+import 'typing_page.dart';
 import 'widgets/controls.dart';
 import 'widgets/dpad.dart';
 
@@ -20,11 +21,8 @@ class RemotePage extends StatefulWidget {
 }
 
 class _RemotePageState extends State<RemotePage> {
-  final _text = TextEditingController();
-
   @override
   void dispose() {
-    _text.dispose();
     super.dispose();
   }
 
@@ -138,27 +136,48 @@ class _RemotePageState extends State<RemotePage> {
         const SizedBox(height: 22),
         _AppShelf(controller: c, enabled: live),
         const SizedBox(height: 18),
-        Row(
-          spacing: 8,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _text,
-                enabled: live,
-                textInputAction: TextInputAction.send,
-                decoration: const InputDecoration(
-                  hintText: 'הקלד לחיפוש בטלוויזיה…',
-                ),
-                onSubmitted: _send,
+        // Typing gets its own screen rather than a field wedged into the
+        // remote: the phone keyboard covers half the display, and a field
+        // under it is a field you cannot see while typing into it.
+        Raised(
+          enabled: live,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => TypingPage(controller: c)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Icon(
+                Icons.keyboard_alt_outlined,
+                size: 19,
+                color: c.remoteTextField != null
+                    ? Palette.amber
+                    : Palette.inkDim,
               ),
-            ),
-            Raised(
-              enabled: live,
-              onTap: () => _send(_text.text),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-              child: const Text('שלח', style: TextStyle(color: Palette.amber)),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  c.remoteTextField != null
+                      ? 'שדה טקסט פתוח על המסך — הקש כאן'
+                      : 'הקלדה בטלוויזיה',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: c.remoteTextField != null
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                    color: c.remoteTextField != null
+                        ? Palette.ink
+                        : Palette.inkMid,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_left_rounded,
+                size: 18,
+                color: Palette.inkDim,
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         Row(
@@ -203,13 +222,6 @@ class _RemotePageState extends State<RemotePage> {
         ],
       ],
     );
-  }
-
-  void _send(String value) {
-    if (value.isEmpty) return;
-    c.sendText(value);
-    _text.clear();
-    FocusScope.of(context).unfocus();
   }
 }
 

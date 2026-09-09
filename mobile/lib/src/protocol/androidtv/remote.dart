@@ -15,6 +15,7 @@ class RemoteState {
     this.volumeMax,
     this.muted,
     this.currentApp,
+    this.textField,
   });
 
   final bool? powered;
@@ -33,6 +34,14 @@ class RemoteState {
   /// Foreground package name, e.g. `com.netflix.ninja`.
   final String? currentApp;
 
+  /// The contents of the text field the box has focus in, or null when it is
+  /// not in one.
+  ///
+  /// The box announces this itself, which is what lets the phone raise its
+  /// keyboard at the moment a search box opens on the television instead of
+  /// waiting to be asked.
+  final String? textField;
+
   RemoteState copyWith({
     bool? powered,
     double? volume,
@@ -40,6 +49,8 @@ class RemoteState {
     int? volumeMax,
     bool? muted,
     String? currentApp,
+    String? textField,
+    bool clearTextField = false,
   }) => RemoteState(
     powered: powered ?? this.powered,
     volume: volume ?? this.volume,
@@ -47,6 +58,7 @@ class RemoteState {
     volumeMax: volumeMax ?? this.volumeMax,
     muted: muted ?? this.muted,
     currentApp: currentApp ?? this.currentApp,
+    textField: clearTextField ? null : (textField ?? this.textField),
   );
 }
 
@@ -250,9 +262,18 @@ class AndroidTvRemote {
         ),
       );
     } else if (message.hasRemoteImeKeyInject()) {
+      final inject = message.remoteImeKeyInject;
+      final app = inject.appInfo.appPackage;
       _emit(
         _state.copyWith(
-          currentApp: message.remoteImeKeyInject.appInfo.appPackage,
+          currentApp: app,
+          textField: inject.hasTextFieldStatus()
+              ? inject.textFieldStatus.value
+              : null,
+          // The box announces the field's absence the same way it announces
+          // its presence, so an unfocused screen clears it rather than leaving
+          // the phone offering a keyboard for a field that closed.
+          clearTextField: !inject.hasTextFieldStatus(),
         ),
       );
     } else if (message.hasRemoteImeBatchEdit()) {

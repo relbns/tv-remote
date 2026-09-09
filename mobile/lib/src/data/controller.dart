@@ -542,6 +542,19 @@ class RemoteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /* ---------------- typing ---------------- */
+
+  /// What the box has in its focused text field, or null when it is not in one.
+  String? get remoteTextField => deviceState.textField;
+
+  /// Replace the contents of that field.
+  ///
+  /// The protocol's text edit carries the whole value rather than a keystroke,
+  /// so this can be called on every character and the field on screen simply
+  /// mirrors what is being typed here — which is the point: a phone keyboard
+  /// instead of picking letters off an on-screen grid with arrow keys.
+  Future<void> typeInto(String text) => send('text', text);
+
   /* ---------------- channels ---------------- */
 
   /// The channel list: the user's, if they have edited it, otherwise the seed.

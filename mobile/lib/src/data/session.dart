@@ -66,7 +66,12 @@ class AndroidTvSession implements DeviceSession {
   Set<String> get capabilities => {
     ..._shared.androidKeyNames.keys,
     'text',
+    // Both names, because the vocabulary is shared across drivers and send()
+    // already treats them as one. Declaring only 'applink' made every app
+    // shortcut a no-op here: the command was rejected as unsupported before it
+    // was ever sent, while the code to carry it out sat right below.
     'applink',
+    'launch',
   };
 
   @override
