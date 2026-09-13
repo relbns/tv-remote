@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../data/device.dart';
+import '../platform/pip.dart';
 import 'theme.dart';
 
 /// Watch a channel on the phone itself.
@@ -25,10 +26,20 @@ class PlayerPage extends StatefulWidget {
 class _PlayerPageState extends State<PlayerPage> {
   VideoPlayerController? _controller;
   String? _failure;
+  bool _pipSupported = false;
+
+  /// Set once the video has been in a floating window, and kept until the app
+  /// is fully back — closing that window stops the activity, and by then the
+  /// system may already have reported that picture-in-picture ended.
+  bool _wasInPip = false;
+
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
     super.initState();
+    Pip.active.addListener(_onPip);
+    _lifecycle = AppLifecycleListener(onStateChange: _onLifecycle);
     _open();
   }
 
@@ -48,14 +59,42 @@ class _PlayerPageState extends State<PlayerPage> {
         DeviceOrientation.landscapeRight,
       ]);
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+      _pipSupported = await Pip.isSupported();
+      // Leaving the app while a channel plays shrinks it into a window rather
+      // than stopping it, which is what someone watching actually wants.
+      if (_pipSupported) {
+        await Pip.setAutoEnter(true, controller.value.size);
+      }
     } on Object catch (failure) {
       _failure = '$failure';
     }
     if (mounted) setState(() {});
   }
 
+  void _onPip() {
+    if (Pip.active.value) _wasInPip = true;
+    if (mounted) setState(() {});
+  }
+
+  void _onLifecycle(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _wasInPip = false;
+    } else if (state == AppLifecycleState.paused && _wasInPip) {
+      // A floating window that is visible leaves the activity paused, not
+      // stopped; reaching "paused" here means the user closed it. The player
+      // has already stopped, so leave the page too — otherwise opening the
+      // app later would resume a channel nobody asked for.
+      if (mounted) Navigator.of(context).maybePop();
+    }
+  }
+
   @override
   void dispose() {
+    Pip.active.removeListener(_onPip);
+    _lifecycle.dispose();
+    // The rest of the app has nothing to shrink.
+    Pip.setAutoEnter(false);
     _controller?.dispose();
     WakelockPlus.disable();
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
@@ -67,6 +106,20 @@ class _PlayerPageState extends State<PlayerPage> {
   Widget build(BuildContext context) {
     final controller = _controller;
     final ready = controller != null && controller.value.isInitialized;
+
+    // In the floating window there is room for the picture and nothing else;
+    // controls there would be too small to hit and would cover the programme.
+    if (Pip.active.value && ready) {
+      return ColoredBox(
+        color: Colors.black,
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: VideoPlayer(controller),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -89,9 +142,9 @@ class _PlayerPageState extends State<PlayerPage> {
                       size: 30,
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'השידור לא נטען',
-                      style: const TextStyle(color: Palette.ink, fontSize: 14),
+                      style: TextStyle(color: Palette.ink, fontSize: 14),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -120,10 +173,23 @@ class _PlayerPageState extends State<PlayerPage> {
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded),
                       color: Colors.white,
+                      tooltip: 'סגירה',
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.black54,
                       ),
                     ),
+                    if (_pipSupported && ready) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => Pip.enter(controller.value.size),
+                        icon: const Icon(Icons.picture_in_picture_alt_rounded),
+                        color: Colors.white,
+                        tooltip: 'תמונה בתוך תמונה',
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black54,
+                        ),
+                      ),
+                    ],
                     const SizedBox(width: 10),
                     DecoratedBox(
                       decoration: BoxDecoration(
