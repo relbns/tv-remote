@@ -21,6 +21,12 @@ function createWindow() {
     ...WINDOW,
     show: false,
     frame: false,
+    // A panel, not a window. An ordinary window has to activate the app to take
+    // the keyboard, and an active app owns the Touch Bar — this one defines no
+    // buttons for it, so the bar went blank for as long as the remote was open.
+    // A non-activating panel takes keys while the app you were using stays the
+    // active one, which is how a menubar popover is supposed to behave.
+    ...(process.platform === "darwin" ? { type: "panel" } : {}),
     resizable: false,
     fullscreenable: false,
     skipTaskbar: true,
@@ -79,7 +85,9 @@ function positionWindow() {
 
 function showWindow() {
   positionWindow()
-  win.show()
+  // showInactive leaves the app you were in frontmost; the panel still becomes
+  // the key window, so typing and the shortcuts keep working.
+  win.showInactive()
   win.focus()
   win.webContents.send("window:shown")
 }
