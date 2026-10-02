@@ -291,6 +291,20 @@ class DeviceStore {
   String get routing => _prefs.getString('routing') ?? 'auto';
   Future<void> setRouting(String value) => _prefs.setString('routing', value);
 
+  /// How the remote screen is arranged: 'classic', 'touchpad' or 'modes'.
+  ///
+  /// Classic is the default because it reads like the plastic remote everyone
+  /// already knows; the other two are for people who prefer to swipe, or who
+  /// want fewer keys on screen at once.
+  String get remoteLayout => _prefs.getString('remoteLayout') ?? 'classic';
+  Future<void> setRemoteLayout(String value) =>
+      _prefs.setString('remoteLayout', value);
+
+  /// Open the phone keyboard by itself when a text field opens on the screen.
+  bool get autoKeyboard => _prefs.getBool('autoKeyboard') ?? true;
+  Future<void> setAutoKeyboard(bool value) =>
+      _prefs.setBool('autoKeyboard', value);
+
   /* ---------------- app shortcuts ---------------- */
 
   List<AppEntry>? shortcuts(String deviceId) {

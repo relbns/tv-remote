@@ -13,6 +13,7 @@ import 'src/ui/channels_page.dart';
 import 'src/ui/devices_page.dart';
 import 'src/ui/remote_page.dart';
 import 'src/ui/theme.dart';
+import 'src/ui/typing_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -118,11 +119,37 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   String? _lastError;
 
+  bool _fieldWasOpen = false;
+
+  /// Raise the phone keyboard the moment a text field opens on the screen.
+  ///
+  /// Only on the opening edge, so dismissing the keyboard while the field is
+  /// still up leaves it dismissed rather than bringing it straight back.
+  void _watchTextField() {
+    final c = widget.controller;
+    final open = c.remoteTextField != null;
+    final opened = open && !_fieldWasOpen;
+    _fieldWasOpen = open;
+    if (!opened || !c.autoKeyboard || TypingPage.isOpen) return;
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
+    unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => TypingPage(controller: c, openedByField: true),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: widget.controller,
     builder: (context, _) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _showErrors());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showErrors();
+        _watchTextField();
+      });
       return Scaffold(
         // IndexedStack keeps every tab alive. Swapping widgets instead would
         // throw away each page's state on every switch — which is what made
@@ -132,7 +159,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           child: IndexedStack(
             index: _tab,
             children: [
-              RemotePage(controller: widget.controller),
+              RemotePage(
+                controller: widget.controller,
+                onOpenApps: () => setState(() => _tab = 2),
+              ),
               ChannelsPage(controller: widget.controller),
               AppsPage(controller: widget.controller),
               DevicesPage(controller: widget.controller),

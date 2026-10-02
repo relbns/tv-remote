@@ -10,10 +10,18 @@ import 'controls.dart';
 /// readily as a tap, which is far more forgiving on a touch screen than aiming
 /// at a small arrow. Both gestures produce the same commands.
 class DPad extends StatelessWidget {
-  const DPad({super.key, required this.onCommand, this.enabled = true});
+  const DPad({
+    super.key,
+    required this.onCommand,
+    this.enabled = true,
+    this.size,
+  });
 
   final void Function(String command) onCommand;
   final bool enabled;
+
+  /// Diameter of the ring. By default it follows the screen width.
+  final double? size;
 
   void _fire(String command) {
     if (!enabled) return;
@@ -23,7 +31,8 @@ class DPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context).width.clamp(0.0, 420.0) * 0.72;
+    final size =
+        this.size ?? MediaQuery.sizeOf(context).width.clamp(0.0, 420.0) * 0.72;
 
     return Opacity(
       opacity: enabled ? 1 : 0.45,

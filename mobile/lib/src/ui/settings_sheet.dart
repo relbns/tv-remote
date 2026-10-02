@@ -10,6 +10,13 @@ import 'widgets/controls.dart';
 
 const tabNames = ['שלט', 'ערוצים', 'אפליקציות', 'מכשירים'];
 
+/// The remote screen's arrangements: stored value, name, one-line summary.
+const remoteLayouts = [
+  ('classic', 'שלט קלאסי', 'הכל במסך אחד, כמו שלט אמיתי'),
+  ('touchpad', 'משטח מגע', 'מחליקים לניווט ומקישים לאישור'),
+  ('modes', 'מצבים', 'ניווט, צפייה ומספרים — כל אחד בלשונית'),
+];
+
 Future<void> showSettingsSheet(
   BuildContext context,
   RemoteController controller,
@@ -93,6 +100,80 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   ],
                 ),
               ),
+            const SizedBox(height: 10),
+            const Text(
+              'פריסת השלט',
+              textAlign: TextAlign.start,
+              style: TextStyle(fontSize: 12, color: Palette.inkDim),
+            ),
+            for (final option in remoteLayouts)
+              Raised(
+                radius: Radii.md,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                onTap: () async {
+                  await widget.controller.setRemoteLayout(option.$1);
+                  if (mounted) setState(() {});
+                },
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(option.$2),
+                          Text(
+                            option.$3,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Palette.inkDim,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (widget.controller.remoteLayout == option.$1)
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 19,
+                        color: Palette.amber,
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 10),
+            Raised(
+              radius: Radii.md,
+              padding: const EdgeInsets.fromLTRB(16, 6, 10, 6),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('מקלדת אוטומטית'),
+                        Text(
+                          'כששדה טקסט נפתח בטלוויזיה, המקלדת נפתחת בטלפון',
+                          style: TextStyle(fontSize: 11, color: Palette.inkDim),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: widget.controller.autoKeyboard,
+                    activeThumbColor: Palette.amber,
+                    onChanged: (value) async {
+                      await widget.controller.setAutoKeyboard(value);
+                      if (mounted) setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 10),
             const Text(
               'עוצמה, כיבוי ומקור',
