@@ -41,9 +41,8 @@ class _RemotePageState extends State<RemotePage> {
     ('numbers', 'מספרים'),
   ];
 
-  void _openTyping() => Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => TypingPage(controller: c)),
-  );
+  void _openTyping() => Navigator.of(context)
+      .push(MaterialPageRoute<void>(builder: (_) => TypingPage(controller: c)));
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +78,7 @@ class _RemotePageState extends State<RemotePage> {
           const SizedBox(height: 14),
           const Text(
             'הכפתורים "כיבוי מסך" ו"מקור" מועברים לטלוויזיה בכבל ה־'
-            '⁨HDMI⁩ בתקן ⁨CEC⁩, וזה עובד רק אם הממיר '
+            '\u2068HDMI\u2069 בתקן \u2068CEC\u2069, וזה עובד רק אם הממיר '
             'תומך בהעברה כזו. חלק מהממירים אינם תומכים, ואז אין דרך תוכנה '
             'לשלוט בטלוויזיה.',
             textAlign: TextAlign.center,
@@ -466,11 +465,8 @@ class _RemotePageState extends State<RemotePage> {
   }
 
   Widget _numberPanel(bool live) {
-    Widget digit(String n) => DigitKey(
-      label: n,
-      enabled: live,
-      onTap: () => c.send('num$n'),
-    );
+    Widget digit(String n) =>
+        DigitKey(label: n, enabled: live, onTap: () => c.send('num$n'));
 
     return Row(
       spacing: 12,
