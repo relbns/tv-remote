@@ -1,0 +1,54 @@
+# Temporary: reports format and analyzer findings as annotations. Remove before merge.
+name: tmp format report
+on:
+  push:
+    branches: [remote-layouts-and-typing]
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: tool/sync_shared.sh
+        working-directory: mobile
+      - run: flutter pub get
+        working-directory: mobile
+      - name: format diff
+        working-directory: mobile
+        run: |
+          dart format . > /dev/null
+          git diff -U0 --no-color -- . | python3 -c '
+          import sys, re
+          f = None; n = 0
+          hunk = []
+          def flush():
+              global hunk
+              if hunk and n < 45:
+                  body = "%0A".join(x.replace("%", "%25") for x in hunk)[:3500]
+                  print(f"::warning file={f},line={line}::{body}")
+              hunk = []
+          for l in sys.stdin.read().split("\n"):
+              if l.startswith("+++ "):
+                  flush(); f = "mobile/" + l[6:]
+              elif l.startswith("@@"):
+                  flush(); n += 1
+                  line = int(re.search(r"\+(\d+)", l).group(1))
+              elif l.startswith(("+", "-")) and not l.startswith(("+++", "---")):
+                  hunk.append(l.replace(" ", "·"))
+          flush()
+          '
+          git checkout -- .
+      - name: analyze
+        if: always()
+        working-directory: mobile
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings > /tmp/an.txt 2>&1 || true
+          grep -E "^ *(info|warning|error) " /tmp/an.txt | head -40 | while IFS= read -r l; do echo "::warning title=analyze::$l"; done
+      - name: test
+        if: always()
+        working-directory: mobile
+        run: |
+          flutter test > /tmp/t.txt 2>&1 && echo "::notice title=tests::passed" || { tail -40 /tmp/t.txt | tr '\n' '|' | sed 's/^/::warning title=tests::/'; echo; }
