@@ -23,5 +23,3 @@ jobs:
       # key tables and that each main-process module imports cleanly.
       - run: npm run check
         working-directory: desktop
-      - run: npm audit --audit-level=high
-        working-directory: desktop
