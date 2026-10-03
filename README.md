@@ -13,7 +13,7 @@
 ![platform](https://img.shields.io/badge/Android-Flutter-0B1020?logo=flutter&logoColor=white)
 ![license](https://img.shields.io/badge/license-MIT-E9A93F)
 
-גרסה נוכחית: <!-- version -->**1.0.0**<!-- /version --> · [להורדה](https://tvremote.benesh.io)
+גרסה נוכחית: <!-- version -->**1.1.0**<!-- /version --> · [להורדה](https://tvremote.benesh.io)
 
 <p>
   <img src="docs/desktop.png" width="270" alt="Orbit בשורת התפריטים של macOS, מחובר לממיר">
