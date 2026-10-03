@@ -11,22 +11,38 @@ import 'theme.dart';
 import 'typing_page.dart';
 import 'widgets/controls.dart';
 import 'widgets/dpad.dart';
+import 'widgets/remote_keys.dart';
 
+/// The remote, in whichever arrangement the settings pick.
+///
+/// All three show the same commands; they differ in what is on screen at once
+/// and how you navigate. Classic is the default because it reads like the
+/// plastic remote everyone already knows.
 class RemotePage extends StatefulWidget {
-  const RemotePage({super.key, required this.controller});
+  const RemotePage({super.key, required this.controller, this.onOpenApps});
   final RemoteController controller;
+
+  /// Shows the full app list, for the "more" tile.
+  final VoidCallback? onOpenApps;
 
   @override
   State<RemotePage> createState() => _RemotePageState();
 }
 
 class _RemotePageState extends State<RemotePage> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   RemoteController get c => widget.controller;
+
+  /// The section the modes layout is showing.
+  String _mode = 'nav';
+
+  static const _modes = [
+    ('nav', 'ניווט'),
+    ('watch', 'צפייה'),
+    ('numbers', 'מספרים'),
+  ];
+
+  void _openTyping() => Navigator.of(context)
+      .push(MaterialPageRoute<void>(builder: (_) => TypingPage(controller: c)));
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +56,12 @@ class _RemotePageState extends State<RemotePage> {
       );
     }
 
+    final body = switch (c.remoteLayout) {
+      'touchpad' => _touchpad(live),
+      'modes' => _modesLayout(live),
+      _ => _classic(live),
+    };
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
       children: [
@@ -49,166 +71,9 @@ class _RemotePageState extends State<RemotePage> {
         ],
         _Header(controller: c),
         const SizedBox(height: 14),
-        Row(
-          spacing: 8,
-          children: [
-            IconKey(
-              icon: Icons.home_rounded,
-              label: 'בית',
-              enabled: live,
-              onTap: () => c.send('home'),
-            ),
-            IconKey(
-              icon: Icons.arrow_back_rounded,
-              label: 'חזור',
-              enabled: live,
-              onTap: () => c.send('back'),
-            ),
-            IconKey(
-              icon: Icons.menu_rounded,
-              label: 'תפריט',
-              enabled: live,
-              onTap: () => c.send('menu'),
-            ),
-            IconKey(
-              icon: Icons.grid_view_rounded,
-              label: 'מדריך',
-              enabled: live,
-              onTap: () => c.send('guide'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Center(
-          child: DPad(enabled: live, onCommand: c.send),
-        ),
-        const SizedBox(height: 8),
-        const Center(
-          child: Text(
-            'אפשר גם להחליק אצבע על הטבעת',
-            style: TextStyle(fontSize: 11, color: Palette.inkDim),
-          ),
-        ),
-        const SizedBox(height: 18),
-        _Transport(controller: c, enabled: live),
-        const SizedBox(height: 10),
-        Row(
-          spacing: 8,
-          children: [
-            Rocker(
-              label: 'עוצמה',
-              // Showing what the device actually reports separates "the command
-              // never arrived" from "this device has no volume to give".
-              value: _volumeReading(c.deviceState),
-              enabled: live,
-              onDown: () => _volume(context, c, 'voldown'),
-              onUp: () => _volume(context, c, 'volup'),
-            ),
-            Raised(
-              radius: 28,
-              enabled: live,
-              onTap: () => _volume(context, c, 'mute'),
-              child: SizedBox(
-                width: 56,
-                height: 56,
-                // The box reports its mute state, so show it rather than a
-                // fixed icon — a control that never reflects reality is worse
-                // than no indicator at all.
-                child: Icon(
-                  c.deviceState.muted ?? false
-                      ? Icons.volume_off_rounded
-                      : Icons.volume_up_rounded,
-                  color: (c.deviceState.muted ?? false)
-                      ? Palette.amber
-                      : Palette.inkMid,
-                  size: 20,
-                ),
-              ),
-            ),
-            Rocker(
-              label: 'ערוץ',
-              enabled: live,
-              onDown: () => c.send('chdown'),
-              onUp: () => c.send('chup'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        _AppShelf(controller: c, enabled: live),
-        const SizedBox(height: 18),
-        // Typing gets its own screen rather than a field wedged into the
-        // remote: the phone keyboard covers half the display, and a field
-        // under it is a field you cannot see while typing into it.
-        Raised(
-          enabled: live,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => TypingPage(controller: c)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(
-                Icons.keyboard_alt_outlined,
-                size: 19,
-                color: c.remoteTextField != null
-                    ? Palette.amber
-                    : Palette.inkDim,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  c.remoteTextField != null
-                      ? 'שדה טקסט פתוח על המסך — הקש כאן'
-                      : 'הקלדה בטלוויזיה',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: c.remoteTextField != null
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                    color: c.remoteTextField != null
-                        ? Palette.ink
-                        : Palette.inkMid,
-                  ),
-                ),
-              ),
-              const Icon(
-                Icons.chevron_left_rounded,
-                size: 18,
-                color: Palette.inkDim,
-              ),
-            ],
-          ),
-        ),
+        ...body,
         const SizedBox(height: 16),
-        Row(
-          spacing: 8,
-          children: [
-            IconKey(
-              icon: Icons.power_settings_new_rounded,
-              label: 'כיבוי מסך',
-              enabled: live,
-              onTap: () => c.send('tvpower'),
-            ),
-            IconKey(
-              icon: Icons.input_rounded,
-              label: 'בחירת מקור',
-              enabled: live,
-              onTap: () => c.send('input'),
-            ),
-            IconKey(
-              icon: Icons.settings_rounded,
-              label: 'הגדרות',
-              enabled: live,
-              onTap: () => c.send('settings'),
-            ),
-            IconKey(
-              icon: Icons.info_outline_rounded,
-              label: 'מידע',
-              enabled: live,
-              onTap: () => c.send('info'),
-            ),
-          ],
-        ),
+        _secondaryKeys(live),
         if (target.source != null) ...[
           const SizedBox(height: 14),
           const Text(
@@ -221,6 +86,632 @@ class _RemotePageState extends State<RemotePage> {
           ),
         ],
       ],
+    );
+  }
+
+  /* ---------------- classic ---------------- */
+
+  /// Everything on one screen, laid out like a physical remote: the four
+  /// navigation companions in the corners around the ring, upright volume and
+  /// channel rockers either side of the media keys, apps along the bottom.
+  List<Widget> _classic(bool live) => [
+    _CornerPad(controller: c, enabled: live),
+    const SizedBox(height: 18),
+    SizedBox(
+      height: 156,
+      child: Row(
+        spacing: 12,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _volumeRocker(live),
+          Expanded(child: _mediaGrid(live)),
+          _channelRocker(live),
+        ],
+      ),
+    ),
+    const SizedBox(height: 16),
+    _appRow(live),
+  ];
+
+  Widget _mediaGrid(bool live) {
+    final muted = c.deviceState.muted ?? false;
+    return Directionality(
+      // Transport keys map to the direction time runs, not reading order.
+      textDirection: TextDirection.ltr,
+      child: Column(
+        spacing: 10,
+        children: [
+          Expanded(
+            child: Row(
+              spacing: 10,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PadKey(
+                  icon: Icons.fast_rewind_rounded,
+                  label: 'הרץ אחורה',
+                  enabled: live,
+                  onTap: () => c.send('rewind'),
+                ),
+                PadKey(
+                  icon: Icons.play_arrow_rounded,
+                  label: 'נגן או השהה',
+                  enabled: live,
+                  accent: true,
+                  onTap: () => c.send('playpause'),
+                ),
+                PadKey(
+                  icon: Icons.fast_forward_rounded,
+                  label: 'הרץ קדימה',
+                  enabled: live,
+                  onTap: () => c.send('forward'),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              spacing: 10,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PadKey(
+                  icon: Icons.keyboard_alt_outlined,
+                  label: 'הקלדה בטלוויזיה',
+                  enabled: live,
+                  // Lit while a field is open on screen: that is the moment
+                  // this key is worth pressing.
+                  accent: c.remoteTextField != null,
+                  onTap: _openTyping,
+                ),
+                PadKey(
+                  icon: Icons.closed_caption_outlined,
+                  label: 'כתוביות',
+                  enabled: live,
+                  onTap: () => c.send('captions'),
+                ),
+                PadKey(
+                  icon: muted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  label: 'השתק',
+                  enabled: live,
+                  accent: muted,
+                  onTap: () => _volume(context, c, 'mute'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _volumeRocker(bool live) => TallRocker(
+    label: 'עוצמה',
+    // Showing what the device actually reports separates "the command never
+    // arrived" from "this device has no volume to give".
+    value: _volumeReading(c.deviceState),
+    enabled: live,
+    upIcon: Icons.add_rounded,
+    upLabel: 'הגבר עוצמה',
+    onUp: () => _volume(context, c, 'volup'),
+    downIcon: Icons.remove_rounded,
+    downLabel: 'הנמך עוצמה',
+    onDown: () => _volume(context, c, 'voldown'),
+  );
+
+  Widget _channelRocker(bool live) => TallRocker(
+    label: 'ערוץ',
+    enabled: live,
+    upIcon: Icons.keyboard_arrow_up_rounded,
+    upLabel: 'ערוץ הבא',
+    onUp: () => c.send('chup'),
+    downIcon: Icons.keyboard_arrow_down_rounded,
+    downLabel: 'ערוץ קודם',
+    onDown: () => c.send('chdown'),
+  );
+
+  /// Three saved apps and a way to the rest, always in the same four slots.
+  Widget _appRow(bool live) {
+    final apps = c.shortcuts().take(3).toList();
+    return Row(
+      spacing: 8,
+      children: [
+        for (final app in apps)
+          AppTile(
+            label: app.label,
+            color: parseColor(app.color),
+            enabled: live,
+            onTap: () => c.launch(app.launch),
+          ),
+        for (var i = apps.length; i < 3; i++) const Spacer(),
+        AppTile(
+          label: 'עוד',
+          icon: Icons.more_horiz_rounded,
+          onTap: widget.onOpenApps ?? () {},
+        ),
+      ],
+    );
+  }
+
+  /* ---------------- touchpad ---------------- */
+
+  /// A wide surface to swipe on, with the navigation keys right under it.
+  List<Widget> _touchpad(bool live) {
+    final app = c.deviceState.currentApp;
+    return [
+      TouchSurface(
+        enabled: live,
+        onCommand: c.send,
+        caption: app == null ? null : '${c.labelFor(app)} · פועל',
+      ),
+      const SizedBox(height: 12),
+      Row(
+        spacing: 8,
+        children: [
+          LabeledKey(
+            icon: Icons.arrow_back_rounded,
+            label: 'חזור',
+            enabled: live,
+            onTap: () => c.send('back'),
+          ),
+          LabeledKey(
+            icon: Icons.home_rounded,
+            label: 'בית',
+            enabled: live,
+            onTap: () => c.send('home'),
+          ),
+          LabeledKey(
+            icon: Icons.menu_rounded,
+            label: 'תפריט',
+            enabled: live,
+            onTap: () => c.send('menu'),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      _Transport(controller: c, enabled: live),
+      const SizedBox(height: 10),
+      _volumeRow(live),
+      const SizedBox(height: 18),
+      _AppShelf(controller: c, enabled: live),
+      const SizedBox(height: 16),
+      _TypingCard(controller: c, enabled: live, onTap: _openTyping),
+    ];
+  }
+
+  /// Volume, mute and channel side by side.
+  Widget _volumeRow(bool live, {bool channel = true}) => Row(
+    spacing: 8,
+    children: [
+      Rocker(
+        label: 'עוצמה',
+        value: _volumeReading(c.deviceState),
+        enabled: live,
+        onDown: () => _volume(context, c, 'voldown'),
+        onUp: () => _volume(context, c, 'volup'),
+      ),
+      Raised(
+        radius: 28,
+        enabled: live,
+        onTap: () => _volume(context, c, 'mute'),
+        child: SizedBox(
+          width: 56,
+          height: 56,
+          // The box reports its mute state, so show it rather than a fixed
+          // icon — a control that never reflects reality is worse than no
+          // indicator at all.
+          child: Icon(
+            c.deviceState.muted ?? false
+                ? Icons.volume_off_rounded
+                : Icons.volume_up_rounded,
+            color: (c.deviceState.muted ?? false)
+                ? Palette.amber
+                : Palette.inkMid,
+            size: 20,
+          ),
+        ),
+      ),
+      if (channel)
+        Rocker(
+          label: 'ערוץ',
+          enabled: live,
+          onDown: () => c.send('chdown'),
+          onUp: () => c.send('chup'),
+        ),
+    ],
+  );
+
+  /* ---------------- modes ---------------- */
+
+  /// One job at a time: navigating, watching, or entering a number. Volume
+  /// stays put underneath whichever is showing.
+  List<Widget> _modesLayout(bool live) => [
+    ModeSwitch(
+      value: _mode,
+      options: _modes,
+      onChanged: (mode) => setState(() => _mode = mode),
+    ),
+    const SizedBox(height: 16),
+    // A fixed floor keeps the volume row from jumping between modes, so it
+    // stays where the thumb learned it is.
+    ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 400),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: switch (_mode) {
+          'watch' => _watchPanel(live),
+          'numbers' => _numberPanel(live),
+          _ => _navPanel(live),
+        },
+      ),
+    ),
+    const SizedBox(height: 14),
+    _volumeRow(live, channel: false),
+  ];
+
+  Widget _navPanel(bool live) {
+    final ring = (MediaQuery.sizeOf(context).width * 0.66).clamp(0.0, 260.0);
+    return Column(
+      children: [
+        DPad(enabled: live, onCommand: c.send, size: ring),
+        const SizedBox(height: 18),
+        Row(
+          spacing: 8,
+          children: [
+            IconKey(
+              icon: Icons.arrow_back_rounded,
+              label: 'חזור',
+              enabled: live,
+              onTap: () => c.send('back'),
+            ),
+            IconKey(
+              icon: Icons.home_rounded,
+              label: 'בית',
+              enabled: live,
+              onTap: () => c.send('home'),
+            ),
+            IconKey(
+              icon: Icons.menu_rounded,
+              label: 'תפריט',
+              enabled: live,
+              onTap: () => c.send('menu'),
+            ),
+            IconKey(
+              icon: Icons.keyboard_alt_outlined,
+              label: 'הקלדה בטלוויזיה',
+              enabled: live,
+              accent: c.remoteTextField != null,
+              onTap: _openTyping,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        _AppShelf(controller: c, enabled: live),
+      ],
+    );
+  }
+
+  Widget _watchPanel(bool live) {
+    final app = c.deviceState.currentApp;
+    return Column(
+      spacing: 20,
+      children: [
+        Text(
+          app == null ? 'מה שמתנגן עכשיו' : 'מתנגן ב־${c.labelFor(app)}',
+          style: const TextStyle(fontSize: 12, color: Palette.inkDim),
+        ),
+        _PlayButton(enabled: live, onTap: () => c.send('playpause')),
+        SizedBox(
+          height: 64,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PadKey(
+                  icon: Icons.skip_previous_rounded,
+                  label: 'הקודם',
+                  enabled: live,
+                  onTap: () => c.send('prev'),
+                ),
+                PadKey(
+                  icon: Icons.fast_rewind_rounded,
+                  label: 'הרץ אחורה',
+                  enabled: live,
+                  onTap: () => c.send('rewind'),
+                ),
+                PadKey(
+                  icon: Icons.fast_forward_rounded,
+                  label: 'הרץ קדימה',
+                  enabled: live,
+                  onTap: () => c.send('forward'),
+                ),
+                PadKey(
+                  icon: Icons.skip_next_rounded,
+                  label: 'הבא',
+                  enabled: live,
+                  onTap: () => c.send('next'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Row(
+          spacing: 8,
+          children: [
+            LabeledKey(
+              icon: Icons.arrow_back_rounded,
+              label: 'חזור',
+              enabled: live,
+              onTap: () => c.send('back'),
+            ),
+            LabeledKey(
+              icon: Icons.closed_caption_outlined,
+              label: 'כתוביות',
+              enabled: live,
+              onTap: () => c.send('captions'),
+            ),
+            LabeledKey(
+              icon: Icons.info_outline_rounded,
+              label: 'מידע',
+              enabled: live,
+              onTap: () => c.send('info'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _numberPanel(bool live) {
+    Widget digit(String n) =>
+        DigitKey(label: n, enabled: live, onTap: () => c.send('num$n'));
+
+    return Row(
+      spacing: 12,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Directionality(
+            // A number pad reads left to right in every language.
+            textDirection: TextDirection.ltr,
+            child: Column(
+              spacing: 8,
+              children: [
+                for (final row in const [
+                  ['1', '2', '3'],
+                  ['4', '5', '6'],
+                  ['7', '8', '9'],
+                ])
+                  Row(spacing: 8, children: [for (final n in row) digit(n)]),
+                Row(
+                  spacing: 8,
+                  children: [
+                    DigitKey(
+                      label: 'מחק',
+                      icon: Icons.backspace_outlined,
+                      enabled: live,
+                      onTap: () => c.send('backspace'),
+                    ),
+                    digit('0'),
+                    DigitKey(
+                      label: 'אישור',
+                      icon: Icons.keyboard_return_rounded,
+                      enabled: live,
+                      onTap: () => c.send('enter'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Column(
+          spacing: 8,
+          children: [
+            SizedBox(height: 208, child: _channelRocker(live)),
+            Semantics(
+              button: true,
+              label: 'מדריך',
+              child: Raised(
+                radius: 20,
+                enabled: live,
+                onTap: () => c.send('guide'),
+                child: const SizedBox(
+                  width: 68,
+                  height: 64,
+                  child: Icon(
+                    Icons.grid_view_rounded,
+                    size: 20,
+                    color: Palette.amber,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /* ---------------- shared ---------------- */
+
+  Widget _secondaryKeys(bool live) => Row(
+    spacing: 8,
+    children: [
+      IconKey(
+        icon: Icons.power_settings_new_rounded,
+        label: 'כיבוי מסך',
+        enabled: live,
+        onTap: () => c.send('tvpower'),
+      ),
+      IconKey(
+        icon: Icons.input_rounded,
+        label: 'בחירת מקור',
+        enabled: live,
+        onTap: () => c.send('input'),
+      ),
+      IconKey(
+        icon: Icons.settings_rounded,
+        label: 'הגדרות',
+        enabled: live,
+        onTap: () => c.send('settings'),
+      ),
+      IconKey(
+        icon: Icons.info_outline_rounded,
+        label: 'מידע',
+        enabled: live,
+        onTap: () => c.send('info'),
+      ),
+    ],
+  );
+}
+
+/// The ring with back, home, menu and guide in its four corners.
+///
+/// The corners are otherwise dead space beside a circle, and putting the four
+/// keys there frees the whole row they used to take above it.
+class _CornerPad extends StatelessWidget {
+  const _CornerPad({required this.controller, required this.enabled});
+  final RemoteController controller;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width.clamp(0.0, 420.0);
+    final ring = (width * 0.66).clamp(0.0, 270.0);
+
+    CornerKey corner(IconData icon, String label, String command) => CornerKey(
+      icon: icon,
+      label: label,
+      enabled: enabled,
+      onTap: () => controller.send(command),
+    );
+
+    return SizedBox(
+      height: ring + 24,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          DPad(enabled: enabled, onCommand: controller.send, size: ring),
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: corner(Icons.arrow_back_rounded, 'חזור', 'back'),
+          ),
+          Align(
+            alignment: AlignmentDirectional.topEnd,
+            child: corner(Icons.home_rounded, 'בית', 'home'),
+          ),
+          Align(
+            alignment: AlignmentDirectional.bottomStart,
+            child: corner(Icons.menu_rounded, 'תפריט', 'menu'),
+          ),
+          Align(
+            alignment: AlignmentDirectional.bottomEnd,
+            child: corner(Icons.grid_view_rounded, 'מדריך', 'guide'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The one big key of the watching mode.
+class _PlayButton extends StatelessWidget {
+  const _PlayButton({required this.onTap, this.enabled = true});
+  final VoidCallback onTap;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'נגן או השהה',
+    child: Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: GestureDetector(
+        onTap: enabled
+            ? () {
+                HapticFeedback.mediumImpact();
+                onTap();
+              }
+            : null,
+        child: Container(
+          width: 136,
+          height: 136,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFF2BC5C), Palette.amber, Palette.amberDeep],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x47E9A93F),
+                blurRadius: 30,
+                offset: Offset(0, 14),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            size: 52,
+            color: Color(0xFF2A1D08),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The way into typing, lit when the screen has a field waiting for text.
+class _TypingCard extends StatelessWidget {
+  const _TypingCard({
+    required this.controller,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final RemoteController controller;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    // Typing gets its own screen rather than a field wedged into the remote:
+    // the phone keyboard covers half the display, and a field under it is a
+    // field you cannot see while typing into it.
+    final open = controller.remoteTextField != null;
+    return Raised(
+      enabled: enabled,
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Icon(
+            Icons.keyboard_alt_outlined,
+            size: 19,
+            color: open ? Palette.amber : Palette.inkDim,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              open ? 'שדה טקסט פתוח על המסך — הקש כאן' : 'הקלדה בטלוויזיה',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: open ? FontWeight.w600 : FontWeight.w400,
+                color: open ? Palette.ink : Palette.inkMid,
+              ),
+            ),
+          ),
+          const Icon(
+            Icons.chevron_left_rounded,
+            size: 18,
+            color: Palette.inkDim,
+          ),
+        ],
+      ),
     );
   }
 }

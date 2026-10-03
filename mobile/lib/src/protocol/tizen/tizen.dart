@@ -33,15 +33,29 @@ class TizenClient {
   final _tokens = StreamController<String>.broadcast();
   final _errors = StreamController<Object>.broadcast();
   final _closed = StreamController<void>.broadcast();
+  final _ime = StreamController<String?>.broadcast();
 
   /// Emits once when the television hands back a fresh token to store.
   Stream<String> get tokens => _tokens.stream;
   Stream<Object> get errors => _errors.stream;
   Stream<void> get closed => _closed.stream;
 
+  /// The set's on-screen keyboard: its text while open, null once it closes.
+  Stream<String?> get ime => _ime.stream;
+
   bool get isConnected => _socket != null;
 
   static String _b64(String value) => base64.encode(utf8.encode(value));
+
+  /// The keyboard's text arrives base64-encoded; anything unreadable is shown
+  /// as an empty field rather than dropping the event.
+  static String _decode(Object? value) {
+    try {
+      return utf8.decode(base64.decode('$value'));
+    } on Object {
+      return '';
+    }
+  }
 
   /// The unauthenticated info endpoint — also the cheapest liveness check, and
   /// the only way to learn the MAC address needed to wake the set later.
@@ -130,6 +144,12 @@ class TizenClient {
           token = '$fresh';
           if (!_tokens.isClosed) _tokens.add(token!);
         }
+      case 'ms.remote.imeStart':
+        if (!_ime.isClosed) _ime.add('');
+      case 'ms.remote.imeUpdate':
+        if (!_ime.isClosed) _ime.add(_decode(message['data']));
+      case 'ms.remote.imeEnd' || 'ms.remote.imeDone':
+        if (!_ime.isClosed) _ime.add(null);
       case 'ms.channel.unauthorized':
         if (!_errors.isClosed) {
           _errors.add(
@@ -197,6 +217,7 @@ class TizenClient {
     await _tokens.close();
     await _errors.close();
     await _closed.close();
+    await _ime.close();
   }
 }
 

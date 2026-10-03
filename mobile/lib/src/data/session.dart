@@ -66,6 +66,8 @@ class AndroidTvSession implements DeviceSession {
   Set<String> get capabilities => {
     ..._shared.androidKeyNames.keys,
     'text',
+    // The IME edit carries the whole value and overwrites the field.
+    'textreplace',
     // Both names, because the vocabulary is shared across drivers and send()
     // already treats them as one. Declaring only 'applink' made every app
     // shortcut a no-op here: the command was rejected as unsupported before it
@@ -148,6 +150,8 @@ class WebosSession implements DeviceSession {
     ..._shared.webosRequests.keys,
     'tvpower',
     'text',
+    'textreplace',
+    'textenter',
     'launch',
   };
 
@@ -170,6 +174,18 @@ class WebosSession implements DeviceSession {
       (payload) =>
           _emit(_state.copyWith(currentApp: payload['appId'] as String?)),
     );
+    // Registering as the remote keyboard is what makes the set report when a
+    // text field takes focus, and what lets insertText reach that field.
+    const keyboard = 'ssap://com.webos.service.ime/registerRemoteKeyboard';
+    _client.subscribe(keyboard, (payload) {
+      final widget = payload['currentWidget'];
+      if (widget is! Map) return;
+      _emit(
+        widget['focus'] == true
+            ? _state.copyWith(textField: '${widget['value'] ?? ''}')
+            : _state.copyWith(clearTextField: true),
+      );
+    });
   }
 
   @override
@@ -182,11 +198,17 @@ class WebosSession implements DeviceSession {
       // "screen" to power down.
       case 'power' || 'tvpower':
         return _client.request('ssap://system/turnOff').then((_) {});
+      // The text itself was being dropped here: the request registered the
+      // keyboard and never sent anything into the field.
       case 'text':
-        final socket = await _client.request(
-          'ssap://com.webos.service.ime/registerRemoteKeyboard',
-        );
-        return socket.isEmpty ? null : null;
+        await _client.request('ssap://com.webos.service.ime/insertText', {
+          'text': '${arg ?? ''}',
+          'replace': true,
+        });
+        return;
+      case 'textenter':
+        await _client.request('ssap://com.webos.service.ime/sendEnterKey');
+        return;
       case 'launch' || 'applink':
         await _client.request('ssap://system.launcher/launch', {'id': '$arg'});
         return;
@@ -248,12 +270,24 @@ class TizenSession implements DeviceSession {
   @override
   Set<String> get capabilities => {..._shared.tizenKeys.keys, 'text', 'launch'};
 
+  StreamSubscription<String?>? _ime;
+
   @override
   Future<void> connect() async {
     await _client.connect();
     // The set answers nothing about its own state, so being connected is the
     // only thing that can honestly be reported.
     _emit(_state.copyWith(powered: true));
+    // It does announce its on-screen keyboard, though, which is enough to
+    // raise the phone's keyboard at the right moment.
+    await _ime?.cancel();
+    _ime = _client.ime.listen(
+      (text) => _emit(
+        text == null
+            ? _state.copyWith(clearTextField: true)
+            : _state.copyWith(textField: text),
+      ),
+    );
   }
 
   @override

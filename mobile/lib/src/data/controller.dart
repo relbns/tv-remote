@@ -123,6 +123,9 @@ class RemoteController extends ChangeNotifier {
       volumeMax: display?.volumeMax ?? source?.volumeMax,
       muted: display?.muted ?? source?.muted,
       currentApp: source?.currentApp ?? display?.currentApp,
+      // Without this the field the box announced never reached the screen, so
+      // the phone could not tell that a search box had opened.
+      textField: source?.textField ?? display?.textField,
     );
   }
 
@@ -547,13 +550,67 @@ class RemoteController extends ChangeNotifier {
   /// What the box has in its focused text field, or null when it is not in one.
   String? get remoteTextField => deviceState.textField;
 
-  /// Replace the contents of that field.
+  /// The half of the target that should receive typed text.
   ///
-  /// The protocol's text edit carries the whole value rather than a keystroke,
-  /// so this can be called on every character and the field on screen simply
-  /// mirrors what is being typed here — which is the point: a phone keyboard
-  /// instead of picking letters off an on-screen grid with arrow keys.
-  Future<void> typeInto(String text) => send('text', text);
+  /// Typing is not routed like a key: it belongs to whichever device actually
+  /// has a field open. In a set the search box may be on the television's own
+  /// app while the box sits idle, and sending there would type into nothing.
+  DeviceSession? get _textSession {
+    final target = current;
+    if (target == null) return null;
+    final ready = <DeviceSession>[];
+    for (final device in [target.source, target.display]) {
+      if (device == null) continue;
+      final session = _sessions[device.id];
+      if (session == null || !session.isConnected) continue;
+      if (!session.capabilities.contains('text')) continue;
+      ready.add(session);
+    }
+    for (final session in ready) {
+      if (session.state.textField != null) return session;
+    }
+    return ready.firstOrNull;
+  }
+
+  /// Whether each keystroke can replace the field on screen.
+  ///
+  /// Android TV and LG take the whole value and overwrite the field, so the
+  /// two stay identical as you type. Samsung only appends, so there the text
+  /// is composed on the phone and sent once.
+  bool get typingIsLive =>
+      _textSession?.capabilities.contains('textreplace') ?? false;
+
+  /// Put text into that field: the whole value where the device replaces, an
+  /// addition where it only appends.
+  ///
+  /// A phone keyboard instead of picking letters off an on-screen grid with
+  /// arrow keys.
+  Future<void> typeInto(String text) async {
+    final session = _textSession;
+    if (session == null) {
+      _set(link, isConnected ? 'אין מכשיר שתומך בהקלדה' : 'אין חיבור פעיל');
+      return;
+    }
+    try {
+      await session.send('text', text);
+    } on Object catch (failure) {
+      _set(link, describeFailure(failure));
+    }
+  }
+
+  /// Confirm the field, the way Enter on a keyboard would.
+  Future<void> submitText() async {
+    final session = _textSession;
+    if (session == null) return send('enter');
+    final command = session.capabilities.contains('textenter')
+        ? 'textenter'
+        : 'enter';
+    try {
+      await session.send(command);
+    } on Object catch (failure) {
+      _set(link, describeFailure(failure));
+    }
+  }
 
   /* ---------------- channels ---------------- */
 
@@ -730,6 +787,20 @@ class RemoteController extends ChangeNotifier {
 
   Future<void> setDefaultTab(int index) async {
     await _store.setDefaultTab(index);
+    notifyListeners();
+  }
+
+  String get remoteLayout => _store.remoteLayout;
+
+  Future<void> setRemoteLayout(String value) async {
+    await _store.setRemoteLayout(value);
+    notifyListeners();
+  }
+
+  bool get autoKeyboard => _store.autoKeyboard;
+
+  Future<void> setAutoKeyboard(bool value) async {
+    await _store.setAutoKeyboard(value);
     notifyListeners();
   }
 
