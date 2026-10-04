@@ -1109,8 +1109,16 @@ class _UpdateBanner extends StatelessWidget {
         TextButton(
           onPressed: () async {
             final uri = Uri.parse(update.downloadUrl);
-            if (await canLaunchUrl(uri)) {
+            try {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('לא ניתן לפתוח את הקישור — נסה להוריד ידנית'),
+                  ),
+                );
+              }
             }
           },
           child: const Text('עדכן', style: TextStyle(color: Palette.amber)),
